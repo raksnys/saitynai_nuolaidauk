@@ -1,0 +1,4 @@
+frontend-example
+.env
+__pycache__
+*.pyc
