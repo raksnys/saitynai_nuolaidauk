@@ -6,3 +6,4 @@ __pycache__
 */migrations/*.py
 venv/
 **/migrations/
+**.sqlite3
