@@ -22,7 +22,7 @@ RUN pip install -r /app/requirements.txt
 
 COPY . .
 
-EXPOSE 5000
+EXPOSE 8002
 
-CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn core.wsgi:application --bind 0.0.0.0:5000"]
+CMD ["sh", "-c", "python manage.py migrate && python manage.py collectstatic --noinput && gunicorn core.wsgi:application --bind 0.0.0.0:8002"]
 
