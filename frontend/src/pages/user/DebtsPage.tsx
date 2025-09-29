@@ -22,7 +22,7 @@ const DebtsPage: React.FC = () => {
 
   const [modalOpen, setModalOpen] = useState(false);
 
-  const handleDebtCreated = (debt: Debt) => {
+  const handleDebtCreated = () => {
     fetchDebts();
   };
 
