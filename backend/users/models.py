@@ -9,7 +9,7 @@ class User(AbstractUser):
     USER_ROLES = [
         ('user', 'User'),
         ('admin', 'Admin'),
-        ('publisher', 'Publisher'),
+        ('moderator', 'Moderator'),
         ('guest', 'Guest')
     ]
     
