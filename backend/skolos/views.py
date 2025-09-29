@@ -21,16 +21,48 @@ class DebtViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='list-my-debts')
     def list_my_debts(self, request):
         user = request.user
-        debts = Debt.objects.filter(debtee=user)
+        paid_param = request.query_params.get('paid')
+        if paid_param is not None:
+            paid_param = True if paid_param.lower() == "true" else False
+            debts = Debt.objects.filter(debtee=user, is_paid=paid_param)
+        else:
+            debts = Debt.objects.filter(debtee=user)
         serializer = self.get_serializer(debts, many=True)
         return Response(serializer.data)
     
+    @action(detail=False, methods=['get'], url_path='list-created-debts')
+    def list_created_debts(self, request):
+        user = request.user
+        confirmed_param = request.query_params.get('confirmed')
+        if confirmed_param is not None:
+            confirmed_param = True if confirmed_param.lower() == "true" else False
+            debts = Debt.objects.filter(owner = user, is_confirmed=confirmed_param)
+        else:
+            debts = Debt.objects.filter(owner=user)
+        serializer = self.get_serializer(debts, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['post'], url_path='mark_unpaid')
+    def mark_debt_unpaid(self, request):
+        user = request.user
+        debt_id = request.data.get('debt_id')
+        if not debt_id:
+            return Response({'error': 'Missing debt ID'}, status=status.HTTP_400_BAD_REQUEST)
+        debt = get_object_or_404(Debt, pk=debt_id, owner=user)
+        if debt.is_paid:
+            debt.is_paid = False
+            debt.is_confirmed = False
+            debt.save()
+            return Response({'status': 'debt marked as unpaid'})
+        return Response({'error': 'Debt is already unpaid'}, status=status.HTTP_400_BAD_REQUEST)
+
+
     @action(detail=True, methods=['post'], url_path='confirm')
     def confirm_debt(self, request, pk=None):
         user = request.user
         debt = get_object_or_404(Debt, pk=pk, owner=user)
         if(debt.is_paid):
-            debt.status = Debt.Status.CONFIRMED
+            debt.is_confirmed = True
             debt.save()
             return Response({'status': 'debt confirmed'})
         return Response({'error': 'Debt is not paid yet'}, status=status.HTTP_400_BAD_REQUEST)
