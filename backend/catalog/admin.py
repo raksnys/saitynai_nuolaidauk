@@ -1,62 +1,65 @@
 from django.contrib import admin
+from .models import (
+    Brand,
+    Category,
+    Store,
+    Discount,
+    Product,
+    ProductDiscountHistory,
+)
 
-from . import models
 
-
-@admin.register(models.Brand)
+@admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
     list_display = ("name", "created_at", "updated_at")
     search_fields = ("name",)
-    ordering = ("name",)
 
 
-@admin.register(models.Category)
+@admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ("name", "created_at", "updated_at")
     search_fields = ("name",)
-    ordering = ("name",)
 
 
-class ProductDiscountHistoryInline(admin.TabularInline):
-    model = models.ProductDiscountHistory
-    readonly_fields = ("applied_at", "removed_at", "applied_price")
-    extra = 0
-
-
-@admin.register(models.Store)
+@admin.register(Store)
 class StoreAdmin(admin.ModelAdmin):
-    list_display = ("brand", "nickname", "city", "state", "country", "created_at")
+    list_display = ("__str__", "city", "country", "created_at")
     list_filter = ("brand", "city", "country")
-    search_fields = ("brand__name", "nickname", "city")
+    search_fields = ("brand__name", "nickname", "city", "address_line1")
 
 
-@admin.register(models.Product)
-class ProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "brand", "store", "category", "price", "price_unit", "weight")
-    list_filter = ("brand", "store", "category", "price_unit")
-    search_fields = ("name", "brand__name", "store__nickname")
-    inlines = [ProductDiscountHistoryInline]
-
-
-@admin.register(models.Discount)
+@admin.register(Discount)
 class DiscountAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "discount_type",
         "value",
         "target_type",
-        "brand",
-        "category",
-        "product",
-        "is_active",
+        "starts_at",
+        "ends_at",
+        "status",
+        "effective_status",
+        "submitted_by",
     )
-    list_filter = ("discount_type", "target_type", "is_active")
-    search_fields = ("name", "brand__name", "category__name", "product__name")
+    list_filter = ("status", "discount_type", "target_type")
+    search_fields = ("name", "description")
+    autocomplete_fields = ("brand", "category", "product", "submitted_by")
+
+    @admin.display(description="Effective Status")
+    def effective_status(self, obj):
+        return obj.effective_status
 
 
-@admin.register(models.ProductDiscountHistory)
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ("name", "store", "brand", "category", "price", "price_unit")
+    list_filter = ("store__brand", "category", "price_unit")
+    search_fields = ("name", "description", "store__name")
+    autocomplete_fields = ("store", "brand", "category")
+
+
+@admin.register(ProductDiscountHistory)
 class ProductDiscountHistoryAdmin(admin.ModelAdmin):
-    list_display = ("product", "discount", "applied_price", "applied_at", "removed_at")
-    list_filter = ("discount__discount_type",)
-    search_fields = ("product__name", "discount__name")
-    raw_id_fields = ("product", "discount")
+    list_display = ("product", "discount", "applied_at", "removed_at", "applied_price")
+    list_filter = ("discount",)
+    autocomplete_fields = ("product", "discount")

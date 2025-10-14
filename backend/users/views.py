@@ -2,7 +2,16 @@ import os
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.exceptions import AuthenticationFailed
-from .serializers import SimpleUserSerializer, UserSerializer
+from .serializers import (
+    ChangePasswordSerializer,
+    ErrorSerializer,
+    LoginSerializer,
+    MessageSerializer,
+    SimpleUserSerializer,
+    TokenSerializer,
+    UserSerializer,
+)
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
 from rest_framework.response import Response
 from .models import User
 import jwt, datetime
@@ -13,6 +22,16 @@ from rest_framework import status
 # Create your views here.
 SECRET = os.getenv('JWT_SECRET', 'secret')
 
+@extend_schema(
+    tags=["Auth"],
+    summary="Register a new user",
+    description="Create an account. Returns the created user without the password.",
+    request=UserSerializer,
+    responses={
+        200: OpenApiResponse(UserSerializer, description="Created user"),
+        400: OpenApiResponse(ErrorSerializer, description="Validation error")
+    }
+)
 class RegisterView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -22,6 +41,16 @@ class RegisterView(APIView):
         serializer.save()
         return Response(serializer.data)
 
+@extend_schema(
+    tags=["Auth"],
+    summary="Login",
+    description="Authenticate a user with email & password. JWT and refresh token are also set as HttpOnly cookies.",
+    request=LoginSerializer,
+    responses={
+        200: OpenApiResponse(TokenSerializer, description="Tokens returned and set as cookies"),
+        401: OpenApiResponse(ErrorSerializer, description="Invalid credentials")
+    }
+)
 class LoginView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -64,9 +93,21 @@ class LoginView(APIView):
 
         return response
     
+@extend_schema(
+    tags=["Auth"],
+    summary="Refresh access token",
+    description="Exchanges a valid refresh cookie for a new access & refresh token pair. No request body required.",
+    request=None,
+    responses={
+        200: OpenApiResponse(TokenSerializer, description="New tokens issued and set as cookies"),
+        401: OpenApiResponse(ErrorSerializer, description="Missing/expired/invalid refresh token")
+    }
+)
 class RefreshTokenView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []
+    # Help drf-spectacular determine schema
+    serializer_class = TokenSerializer
     
     def post(self, request):
         refresh_token = request.COOKIES.get('refresh_jwt')
@@ -116,6 +157,15 @@ class RefreshTokenView(APIView):
         return response
 
 
+@extend_schema(
+    tags=["Users"],
+    summary="Get current user",
+    description="Returns the currently authenticated user's profile.",
+    responses={
+        200: OpenApiResponse(UserSerializer, description="Authenticated user"),
+        401: OpenApiResponse(ErrorSerializer, description="Unauthenticated")
+    }
+)
 class UserView(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -134,6 +184,17 @@ class UserView(APIView):
 
         return Response(serializer.data)
     
+@extend_schema(
+    tags=["Users"],
+    summary="Change password",
+    description="Changes the current user's password after verifying the current password.",
+    request=ChangePasswordSerializer,
+    responses={
+        200: OpenApiResponse(MessageSerializer, description="Password changed"),
+        400: OpenApiResponse(ErrorSerializer, description="Validation error"),
+        401: OpenApiResponse(ErrorSerializer, description="Unauthenticated")
+    }
+)
 class ChangePasswordView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -151,8 +212,19 @@ class ChangePasswordView(APIView):
         user.save()
         return Response({'message': 'Password changed successfully.'}, status=status.HTTP_200_OK)
 
+@extend_schema(
+    tags=["Auth"],
+    summary="Logout",
+    description="Clears JWT and refresh cookies. No request body required.",
+    request=None,
+    responses={
+        200: OpenApiResponse(MessageSerializer, description="Logged out")
+    }
+)
 class LogoutView(APIView):
     permission_classes = [AllowAny]
+    # Explicitly set serializer used for documentation purposes
+    serializer_class = MessageSerializer
     def post(self, request):
         response = Response()
         response.delete_cookie('jwt')
@@ -162,6 +234,15 @@ class LogoutView(APIView):
         }
         return response
     
+@extend_schema(
+    tags=["Users"],
+    summary="List users",
+    description="Admin-only view to list all users.",
+    responses={
+        200: OpenApiResponse(SimpleUserSerializer(many=True), description="List of users"),
+        401: OpenApiResponse(ErrorSerializer, description="Unauthenticated/unauthorized")
+    }
+)
 class UserListView(APIView):
     permission_classes = [IsAuthenticated]
 

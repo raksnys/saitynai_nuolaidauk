@@ -1,0 +1,13 @@
+<header class="app-header">
+    <div class="logo">
+        <a routerLink="/">Nuolaidauk</a>
+    </div>
+    <nav class="navigation">
+        @if (isLoggedIn$ | async) {
+        <a routerLink="/stores">Stores</a>
+        <a routerLink="/my-profile">My Profile</a>
+        <a href="#" (click)="logout($event)">Logout</a> } @else {
+        <a routerLink="/login">Login</a>
+        <a routerLink="/register">Register</a> }
+    </nav>
+</header>

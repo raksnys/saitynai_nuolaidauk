@@ -1,0 +1,26 @@
+<div class="stores-container">
+    <div class="sort-container">
+        <label for="sort-order">Sort by:</label>
+        <select id="sort-order" (change)="onSortChange($event)">
+            <option value="name">Name (A-Z)</option>
+            <option value="stores_count">Stores (High to Low)</option>
+            <option value="products_count">Products (High to Low)</option>
+            <option value="active_discounts_count">Discounts (High to Low)</option>
+        </select>
+    </div>
+    <div class="stores-grid">
+        @for (brand of brands; track brand.id) {
+        <div class="store-card">
+            <div class="logo-container">
+                <img [src]="'assets/' + brand.name.toUpperCase() + '.png'" [alt]="brand.name + ' logo'" class="store-logo">
+            </div>
+            <h3>{{ brand.name }}</h3>
+            <div class="card-content">
+                <p>Stores: {{ brand.stores_count }}</p>
+                <p>Products: {{ brand.products_count }}</p>
+                <p>Active Discounts: {{ brand.active_discounts_count }}</p>
+            </div>
+        </div>
+        }
+    </div>
+</div>

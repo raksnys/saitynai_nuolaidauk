@@ -42,8 +42,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'drf_spectacular',
     'corsheaders',
-    'users',
+    'users.apps.UsersConfig',
     'catalog',
 ]
 
@@ -79,6 +80,20 @@ TEMPLATES = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'users.helpers.JWTAuthentication.JWTAuthentication',
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Nuolaidauk API',
+    'DESCRIPTION': 'API for the Nuolaidauk project',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'AUTHENTICATION_EXTENSIONS': {
+        'users.helpers.openapi.JWTCookieAuthenticationExtension': None,
+    },
+    'SECURITY': [
+        {'jwtCookieAuth': []},
     ],
 }
 
@@ -149,7 +164,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-CORS_ORIGIN_WHITELIST = os.getenv('CORS_ORIGIN_WHITELIST', 'http://localhost:3001,http://localhost').split(',')
+CORS_ORIGIN_WHITELIST = os.getenv('CORS_ORIGIN_WHITELIST', 'http://localhost:4200,http://localhost').split(',')
 
 CORS_ALLOW_CREDENTIALS = True
 

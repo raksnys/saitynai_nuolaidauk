@@ -7,3 +7,5 @@ __pycache__
 venv/
 **/migrations/
 **.sqlite3
+lambda/
+backend/db.sqlite3

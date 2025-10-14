@@ -1,0 +1,40 @@
+<div class="profile-container">
+    <div class="profile-card">
+        <h2>My Profile</h2>
+        @if (user) {
+        <div class="profile-details">
+            <div class="detail-item">
+                <span class="label">Name:</span>
+                <span class="value">{{ user.name }}</span>
+            </div>
+            <div class="detail-item">
+                <span class="label">Email:</span>
+                <span class="value">{{ user.email }}</span>
+            </div>
+        </div>
+        } @else {
+        <div class="loading">
+            <p>Loading profile...</p>
+        </div>
+        }
+
+        <div class="change-password-form">
+            <h3>Change Password</h3>
+            <form (ngSubmit)="onChangePassword()">
+                <div class="form-group">
+                    <label for="current-password">Current Password</label>
+                    <input type="password" id="current-password" name="current_password" [(ngModel)]="current_password" required>
+                </div>
+                <div class="form-group">
+                    <label for="new-password">New Password</label>
+                    <input type="password" id="new-password" name="new_password" [(ngModel)]="new_password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirm-password">Confirm New Password</label>
+                    <input type="password" id="confirm-password" name="confirm_password" [(ngModel)]="confirm_password" required>
+                </div>
+                <button type="submit">Change Password</button>
+            </form>
+        </div>
+    </div>
+</div>

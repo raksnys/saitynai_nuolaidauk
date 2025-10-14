@@ -2,6 +2,8 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.utils import timezone
+from django.conf import settings
+from decimal import Decimal
 
 
 class TimeStampedModel(models.Model):
@@ -79,10 +81,19 @@ class Discount(TimeStampedModel):
         (TARGET_BRAND, "Brand"),
     ]
 
+    STATUS_IN_REVIEW = "in_review"
+    STATUS_APPROVED = "approved"
+    STATUS_DENIED = "denied"
+    STATUS_CHOICES = [
+        (STATUS_IN_REVIEW, "In Review"),
+        (STATUS_APPROVED, "Approved"),
+        (STATUS_DENIED, "Denied"),
+    ]
+
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
     discount_type = models.CharField(max_length=20, choices=DISCOUNT_TYPE_CHOICES)
-    value = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    value = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0'))])
     target_type = models.CharField(max_length=20, choices=TARGET_TYPE_CHOICES)
     brand = models.ForeignKey(
         Brand,
@@ -105,9 +116,17 @@ class Discount(TimeStampedModel):
         on_delete=models.CASCADE,
         related_name="discount_rules",
     )
-    starts_at = models.DateTimeField(default=timezone.now)
-    ends_at = models.DateTimeField(null=True, blank=True)
-    is_active = models.BooleanField(default=True)
+    starts_at = models.DateTimeField()
+    ends_at = models.DateTimeField()
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICES, default=STATUS_IN_REVIEW
+    )
+    submitted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="submitted_discounts",
+    )
 
     class Meta:
         constraints = [
@@ -121,6 +140,22 @@ class Discount(TimeStampedModel):
 
     def __str__(self) -> str:
         return self.name
+
+    @property
+    def effective_status(self) -> str:
+        """Returns the calculated status based on current time."""
+        if self.status == self.STATUS_IN_REVIEW:
+            return "IN_REVIEW"
+        if self.status == self.STATUS_DENIED:
+            return "DENIED"
+        if self.status == self.STATUS_APPROVED:
+            now = timezone.now()
+            if self.ends_at < now:
+                return "ENDED"
+            if self.starts_at > now:
+                return "APPROVED"
+            return "IN_ACTION"
+        return self.status.upper()
 
     def clean(self) -> None:
         target_map = {
@@ -153,14 +188,20 @@ class Product(TimeStampedModel):
         (PER_KILOGRAM, "Per kilogram"),
     ]
 
-    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="products")
-    brand = models.ForeignKey(Brand, on_delete=models.PROTECT, related_name="products")
+    store = models.ForeignKey(Store, on_delete=models.CASCADE, related_name="products", null=True, blank=True)
+    brand = models.ForeignKey(
+        Brand,
+        on_delete=models.PROTECT,
+        related_name="products",
+        null=True,
+        blank=True,
+    )
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="products")
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
+    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0'))])
     price_unit = models.CharField(max_length=20, choices=PRICE_UNIT_CHOICES, default=PER_PIECE)
-    weight = models.DecimalField(max_digits=8, decimal_places=3, validators=[MinValueValidator(0)])
+    weight = models.DecimalField(max_digits=8, decimal_places=3, validators=[MinValueValidator(Decimal('0'))])
     discounts = models.ManyToManyField(
         "Discount",
         through="ProductDiscountHistory",
@@ -176,6 +217,8 @@ class Product(TimeStampedModel):
         return self.name
 
     def clean(self) -> None:
+        if self.store is None:
+            return
         if self.brand != self.store.brand:
             raise ValidationError("Product brand must match the brand of the store it belongs to.")
 
@@ -188,7 +231,7 @@ class ProductDiscountHistory(models.Model):
     applied_price = models.DecimalField(
         max_digits=10,
         decimal_places=2,
-        validators=[MinValueValidator(0)],
+    validators=[MinValueValidator(Decimal('0'))],
         help_text="Snapshot of the product price when the discount was applied.",
     )
 

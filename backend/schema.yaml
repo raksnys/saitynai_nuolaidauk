@@ -1,0 +1,1674 @@
+openapi: 3.0.3
+info:
+  title: Nuolaidauk API
+  version: 1.0.0
+  description: API for the Nuolaidauk project
+paths:
+  /api/catalog/brands/:
+    get:
+      operationId: api_catalog_brands_list
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Brand'
+          description: ''
+    post:
+      operationId: api_catalog_brands_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Brand'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Brand'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Brand'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brand'
+          description: ''
+  /api/catalog/brands/{id}/:
+    get:
+      operationId: api_catalog_brands_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this brand.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brand'
+          description: ''
+    put:
+      operationId: api_catalog_brands_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this brand.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Brand'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Brand'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Brand'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brand'
+          description: ''
+    patch:
+      operationId: api_catalog_brands_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this brand.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBrand'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBrand'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBrand'
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Brand'
+          description: ''
+    delete:
+      operationId: api_catalog_brands_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this brand.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/catalog/categories/:
+    get:
+      operationId: api_catalog_categories_list
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+          description: ''
+    post:
+      operationId: api_catalog_categories_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/catalog/categories/{id}/:
+    get:
+      operationId: api_catalog_categories_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    put:
+      operationId: api_catalog_categories_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Category'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Category'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Category'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    patch:
+      operationId: api_catalog_categories_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCategory'
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    delete:
+      operationId: api_catalog_categories_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this category.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/catalog/discounts/:
+    get:
+      operationId: api_catalog_discounts_list
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Discount'
+          description: ''
+    post:
+      operationId: api_catalog_discounts_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Discount'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Discount'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Discount'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discount'
+          description: ''
+  /api/catalog/discounts/{id}/:
+    get:
+      operationId: api_catalog_discounts_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this discount.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discount'
+          description: ''
+    put:
+      operationId: api_catalog_discounts_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this discount.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Discount'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Discount'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Discount'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discount'
+          description: ''
+    patch:
+      operationId: api_catalog_discounts_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this discount.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedDiscount'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedDiscount'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedDiscount'
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Discount'
+          description: ''
+    delete:
+      operationId: api_catalog_discounts_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this discount.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/catalog/product-discount-history/:
+    get:
+      operationId: api_catalog_product_discount_history_list
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductDiscountHistory'
+          description: ''
+  /api/catalog/product-discount-history/{id}/:
+    get:
+      operationId: api_catalog_product_discount_history_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product discount history.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductDiscountHistory'
+          description: ''
+  /api/catalog/products/:
+    get:
+      operationId: api_catalog_products_list
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+          description: ''
+    post:
+      operationId: api_catalog_products_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Product'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Product'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+  /api/catalog/products/{id}/:
+    get:
+      operationId: api_catalog_products_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    put:
+      operationId: api_catalog_products_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Product'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Product'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    patch:
+      operationId: api_catalog_products_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProduct'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProduct'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProduct'
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    delete:
+      operationId: api_catalog_products_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this product.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/catalog/stores/:
+    get:
+      operationId: api_catalog_stores_list
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Store'
+          description: ''
+    post:
+      operationId: api_catalog_stores_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Store'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Store'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Store'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+  /api/catalog/stores/{id}/:
+    get:
+      operationId: api_catalog_stores_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+    put:
+      operationId: api_catalog_stores_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Store'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Store'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Store'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+    patch:
+      operationId: api_catalog_stores_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedStore'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedStore'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedStore'
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Store'
+          description: ''
+    delete:
+      operationId: api_catalog_stores_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this store.
+        required: true
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '204':
+          description: No response body
+  /api/catalog/user/discounts/:
+    get:
+      operationId: api_catalog_user_discounts_list
+      description: |-
+        - POST: Allows authenticated users to submit a new discount for a product or category.
+        - GET: Allows authenticated users to see a history of their submitted discounts.
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserDiscountList'
+          description: ''
+    post:
+      operationId: api_catalog_user_discounts_create
+      description: |-
+        - POST: Allows authenticated users to submit a new discount for a product or category.
+        - GET: Allows authenticated users to see a history of their submitted discounts.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDiscountCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserDiscountCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserDiscountCreate'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDiscountCreate'
+          description: ''
+  /api/change-password:
+    post:
+      operationId: api_change_password_create
+      summary: Change user password
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+  /api/list:
+    get:
+      operationId: api_list_list
+      summary: List all users
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SimpleUser'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+  /api/login:
+    post:
+      operationId: api_login_create
+      summary: Login a user
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Login'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Login'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Login'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+  /api/logout:
+    post:
+      operationId: api_logout_create
+      summary: Logout user
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Message'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Message'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Message'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+          description: ''
+  /api/refresh:
+    post:
+      operationId: api_refresh_create
+      summary: Refresh access token
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Token'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Token'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Token'
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+  /api/register:
+    post:
+      operationId: api_register_create
+      summary: Register a new user
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+  /api/user:
+    get:
+      operationId: api_user_retrieve
+      summary: Get current user
+      tags:
+      - api
+      security:
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '401':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: ''
+components:
+  schemas:
+    Brand:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+      required:
+      - created_at
+      - id
+      - name
+      - updated_at
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+      required:
+      - created_at
+      - id
+      - name
+      - updated_at
+    ChangePassword:
+      type: object
+      properties:
+        current_password:
+          type: string
+          writeOnly: true
+        new_password:
+          type: string
+          writeOnly: true
+      required:
+      - current_password
+      - new_password
+    Discount:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        discount_type:
+          $ref: '#/components/schemas/DiscountTypeEnum'
+        value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        target_type:
+          $ref: '#/components/schemas/TargetTypeEnum'
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        brand:
+          type: integer
+          nullable: true
+        category:
+          type: integer
+          nullable: true
+        product:
+          type: integer
+          nullable: true
+        submitted_by:
+          type: integer
+          nullable: true
+      required:
+      - created_at
+      - discount_type
+      - ends_at
+      - id
+      - name
+      - starts_at
+      - target_type
+      - updated_at
+      - value
+    DiscountTypeEnum:
+      enum:
+      - percentage
+      - fixed
+      type: string
+      description: |-
+        * `percentage` - Percentage
+        * `fixed` - Fixed amount
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
+    Login:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - password
+    Message:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+      - message
+    PatchedBrand:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+    PatchedCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+    PatchedDiscount:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        discount_type:
+          $ref: '#/components/schemas/DiscountTypeEnum'
+        value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        target_type:
+          $ref: '#/components/schemas/TargetTypeEnum'
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+        status:
+          $ref: '#/components/schemas/StatusEnum'
+        brand:
+          type: integer
+          nullable: true
+        category:
+          type: integer
+          nullable: true
+        product:
+          type: integer
+          nullable: true
+        submitted_by:
+          type: integer
+          nullable: true
+    PatchedProduct:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        discounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Discount'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        price_unit:
+          $ref: '#/components/schemas/PriceUnitEnum'
+        weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,3})?$
+        store:
+          type: integer
+        brand:
+          type: integer
+        category:
+          type: integer
+    PatchedStore:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        brand:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        nickname:
+          type: string
+          description: Optional label to distinguish individual store locations.
+          maxLength: 255
+        address_line1:
+          type: string
+          maxLength: 255
+        address_line2:
+          type: string
+          maxLength: 255
+        city:
+          type: string
+          maxLength: 100
+        state:
+          type: string
+          maxLength: 100
+        postal_code:
+          type: string
+          maxLength: 20
+        country:
+          type: string
+          maxLength: 100
+    PriceUnitEnum:
+      enum:
+      - per_piece
+      - per_kilogram
+      type: string
+      description: |-
+        * `per_piece` - Per piece
+        * `per_kilogram` - Per kilogram
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        discounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Discount'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        price_unit:
+          $ref: '#/components/schemas/PriceUnitEnum'
+        weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,3})?$
+        store:
+          type: integer
+        brand:
+          type: integer
+        category:
+          type: integer
+      required:
+      - brand
+      - category
+      - created_at
+      - discounts
+      - id
+      - name
+      - price
+      - store
+      - updated_at
+      - weight
+    ProductDiscountHistory:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        applied_at:
+          type: string
+          format: date-time
+          readOnly: true
+        removed_at:
+          type: string
+          format: date-time
+          nullable: true
+        applied_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          description: Snapshot of the product price when the discount was applied.
+        product:
+          type: integer
+        discount:
+          type: integer
+      required:
+      - applied_at
+      - applied_price
+      - discount
+      - id
+      - product
+    RoleEnum:
+      enum:
+      - user
+      - admin
+      - moderator
+      - guest
+      type: string
+      description: |-
+        * `user` - User
+        * `admin` - Admin
+        * `moderator` - Moderator
+        * `guest` - Guest
+    SimpleUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+      required:
+      - id
+      - name
+    StatusEnum:
+      enum:
+      - in_review
+      - approved
+      - denied
+      type: string
+      description: |-
+        * `in_review` - In Review
+        * `approved` - Approved
+        * `denied` - Denied
+    Store:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        brand:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        nickname:
+          type: string
+          description: Optional label to distinguish individual store locations.
+          maxLength: 255
+        address_line1:
+          type: string
+          maxLength: 255
+        address_line2:
+          type: string
+          maxLength: 255
+        city:
+          type: string
+          maxLength: 100
+        state:
+          type: string
+          maxLength: 100
+        postal_code:
+          type: string
+          maxLength: 20
+        country:
+          type: string
+          maxLength: 100
+      required:
+      - address_line1
+      - brand
+      - city
+      - created_at
+      - id
+      - postal_code
+      - updated_at
+    TargetTypeEnum:
+      enum:
+      - product
+      - category
+      - brand
+      type: string
+      description: |-
+        * `product` - Product
+        * `category` - Category
+        * `brand` - Brand
+    Token:
+      type: object
+      properties:
+        jwt:
+          type: string
+          readOnly: true
+        refresh_token:
+          type: string
+          readOnly: true
+      required:
+      - jwt
+      - refresh_token
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        email:
+          type: string
+          maxLength: 255
+        password:
+          type: string
+          writeOnly: true
+          maxLength: 255
+        role:
+          $ref: '#/components/schemas/RoleEnum'
+      required:
+      - email
+      - id
+      - name
+      - password
+    UserDiscountCreate:
+      type: object
+      description: Serializer for users to submit a new discount for moderation.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        discount_type:
+          $ref: '#/components/schemas/DiscountTypeEnum'
+        value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+        store_id:
+          type: integer
+          writeOnly: true
+        category_id:
+          type: integer
+          writeOnly: true
+        product_id:
+          type: integer
+          writeOnly: true
+        new_product:
+          allOf:
+          - $ref: '#/components/schemas/UserProductCreate'
+          writeOnly: true
+      required:
+      - discount_type
+      - ends_at
+      - id
+      - name
+      - starts_at
+      - store_id
+      - value
+    UserDiscountList:
+      type: object
+      description: Serializer for listing user-submitted discounts with their status.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        target_type:
+          $ref: '#/components/schemas/TargetTypeEnum'
+        starts_at:
+          type: string
+          format: date-time
+        ends_at:
+          type: string
+          format: date-time
+        effective_status:
+          type: string
+          readOnly: true
+      required:
+      - effective_status
+      - ends_at
+      - id
+      - name
+      - starts_at
+      - target_type
+    UserProductCreate:
+      type: object
+      description: Serializer for creating a product within the discount submission.
+      properties:
+        name:
+          type: string
+          maxLength: 255
+        brand:
+          type: string
+        category:
+          type: string
+        price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        price_unit:
+          $ref: '#/components/schemas/PriceUnitEnum'
+        weight:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,5}(?:\.\d{0,3})?$
+        description:
+          type: string
+      required:
+      - brand
+      - category
+      - name
+      - price
+      - weight
+  securitySchemes:
+    jwtCookieAuth:
+      type: apiKey
+      in: cookie
+      name: jwt

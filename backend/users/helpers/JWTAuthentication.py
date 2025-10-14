@@ -4,7 +4,8 @@ from users.models import User
 import jwt
 import os
 
-SECRET = os.getenv('DJANGO_SECRET_KEY', 'secret')
+# Keep JWT secret consistent with application settings
+SECRET = os.getenv('JWT_SECRET', os.getenv('DJANGO_SECRET_KEY', 'secret'))
 
 class JWTAuthentication(BaseAuthentication):
     def authenticate(self, request):
