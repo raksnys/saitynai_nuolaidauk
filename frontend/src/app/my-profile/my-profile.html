@@ -36,5 +36,36 @@
                 <button type="submit">Change Password</button>
             </form>
         </div>
+
+        <div class="wishlist-section">
+            <h3>Wishlisted Items</h3>
+            @if (isLoadingWishlist) {
+            <div class="loading">
+                <p>Loading wishlist...</p>
+            </div>
+            } @else if (wishlist.length === 0) {
+            <p class="empty">No items in wishlist.</p>
+            } @else {
+            <div class="wishlist-grid">
+                @for (item of wishlist; track item.id) {
+                <div class="wishlist-card">
+                    <div class="photo-wrap">
+                        <img [src]="item.product_photo_url" [alt]="item.product_name">
+                    </div>
+                    <div class="info">
+                        <h4>{{ item.product_name }}</h4>
+                        <p>
+                            @if (item.discounted_price) {
+                            <span class="discount-price">{{ item.discounted_price }} €</span>
+                            <span class="original-price">{{ item.price }} €</span> } @else {
+                            <span>{{ item.price }} €</span> }
+                        </p>
+                        <a [routerLink]="['/products', item.product]" class="view-link">View</a>
+                    </div>
+                </div>
+                }
+            </div>
+            }
+        </div>
     </div>
 </div>

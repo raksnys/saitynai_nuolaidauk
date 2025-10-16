@@ -1,0 +1,106 @@
+@if (isLoading) {
+<div class="loading-container">
+    <p>Loading product details...</p>
+</div>
+} @else if (error) {
+<div class="error-container">
+    <p>{{ error }}</p>
+</div>
+} @else if (product) {
+<div class="product-detail-container">
+    <div class="product-card">
+        <div class="product-header">
+            @if (brand) {
+            <img [src]="'assets/' + brand.name.toUpperCase() + '.png'" [alt]="brand.name" class="brand-logo"> }
+            <h1>{{ product.name }}</h1>
+        </div>
+        <div class="product-content">
+            <div class="product-image">
+                <img [src]="product.photo_url" [alt]="product.name">
+            </div>
+            <div class="product-info">
+                <div class="price">
+                    @if (product.discounts && product.discounts.length > 0) {
+                    <div class="price-line">
+                        <span class="discount-price">{{ (product.price - product.discounts[0].value).toFixed(2) | currency:'EUR' }}</span>
+                        <span class="price-unit">/ {{ product.price_unit.replace('_', ' ') }}</span>
+                    </div>
+                    <span class="original-price">{{ product.price | currency:'EUR' }}</span> } @else {
+                    <div class="price-line">
+                        <span>{{ product.price | currency:'EUR' }}</span>
+                        <span class="price-unit">/ {{ product.price_unit.replace('_', ' ') }}</span>
+                    </div>
+                    }
+                </div>
+
+                @if (product.weight) {
+                <p><strong>Weight:</strong> {{ product.weight }}g</p>
+                } @if (product.description) {
+                <p><strong>Description:</strong> {{ product.description }}</p>
+                } @if (product.discounts && product.discounts.length > 0) {
+                <button class="view-discounts-btn" (click)="isModalOpen = true">View All Discounts</button> }
+
+                <button class="wishlist-btn" [class.wishlisted]="isWishlisted" (click)="toggleWishlist()" aria-label="Wishlist toggle">
+                    <i [ngClass]="isWishlisted ? 'fas fa-heart-broken' : 'far fa-heart'"></i>
+                    <span>{{ isWishlisted ? 'Remove from wishlist' : 'Add to wishlist' }}</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (discountHistory.length > 0) {
+    <div class="discount-history">
+        <h2>Discount History</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Discount Name</th>
+                    <th>Value</th>
+                    <th>Started At</th>
+                    <th>Ended At</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (record of discountHistory; track record.id) {
+                <tr>
+                    <td>{{ record.discount.name }}</td>
+                    <td>{{ record.discount.value }}{{ record.discount.discount_type === 'percentage' ? '%' : '€' }}</td>
+                    <td>{{ record.discount.starts_at | date:'short' }}</td>
+                    <td>{{ record.discount.ends_at | date:'short' }}</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    } @if (isModalOpen) {
+    <div class="modal-backdrop" (click)="isModalOpen = false">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <button class="modal-close-btn" (click)="isModalOpen = false">&times;</button>
+            <h2>All Available Discounts</h2>
+            <ul>
+                @for (discount of product.discounts; track discount.id) {
+                <li>{{ discount.name }}</li>
+                }
+            </ul>
+        </div>
+    </div>
+    } @if (relatedProducts.length > 0) {
+    <div class="related-products">
+        <h2>Related Products</h2>
+        <div class="products-grid">
+            @for (relatedProduct of relatedProducts; track relatedProduct.id) {
+            <div class="product-item" (click)="navigateToProduct(relatedProduct.id)">
+                <img [src]="relatedProduct.photo_url" [alt]="relatedProduct.name">
+                <h3>{{ relatedProduct.name }}</h3>
+                <p>{{ relatedProduct.price | currency:'EUR' }}</p>
+            </div>
+            }
+        </div>
+    </div>
+    }
+</div>
+} @else {
+<div class="error-container">
+    <p>Product not found.</p>
+</div>
+}

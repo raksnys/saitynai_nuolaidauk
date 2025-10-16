@@ -1,7 +1,12 @@
-from rest_framework import generics, permissions, viewsets
+from rest_framework import generics, permissions, viewsets, status
+from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
+from rest_framework.filters import OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import Brand, Category, Discount, Product, ProductDiscountHistory, Store
+from .models import Brand, Category, Discount, Product, ProductDiscountHistory, Store, WishlistItem
+from .pagination import StandardResultsSetPagination
+from .filters import ProductFilter
 from .serializers import (
     BrandSerializer,
     CategorySerializer,
@@ -11,7 +16,9 @@ from .serializers import (
     StoreSerializer,
     UserDiscountCreateSerializer,
     UserDiscountListSerializer,
+    WishlistItemSerializer,
 )
+from users.helpers.permissions import IsModeratorOrAdmin
 
 
 @extend_schema_view(
@@ -26,6 +33,13 @@ class BrandViewSet(viewsets.ModelViewSet):
     queryset = Brand.objects.all().order_by("name")
     serializer_class = BrandSerializer
 
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            self.permission_classes = [permissions.AllowAny]
+        else:
+            self.permission_classes = [IsModeratorOrAdmin]
+        return super().get_permissions()
+
 
 @extend_schema_view(
     list=extend_schema(tags=["Categories"], summary="List categories"),
@@ -39,6 +53,13 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all().order_by("name")
     serializer_class = CategorySerializer
 
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            self.permission_classes = [permissions.AllowAny]
+        else:
+            self.permission_classes = [IsModeratorOrAdmin]
+        return super().get_permissions()
+
 
 @extend_schema_view(
     list=extend_schema(tags=["Stores"], summary="List stores"),
@@ -51,6 +72,13 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class StoreViewSet(viewsets.ModelViewSet):
     queryset = Store.objects.select_related("brand").all()
     serializer_class = StoreSerializer
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            self.permission_classes = [permissions.AllowAny]
+        else:
+            self.permission_classes = [IsModeratorOrAdmin]
+        return super().get_permissions()
 
 
 @extend_schema_view(
@@ -68,6 +96,18 @@ class ProductViewSet(viewsets.ModelViewSet):
         .all()
     )
     serializer_class = ProductSerializer
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    filterset_class = ProductFilter
+    ordering_fields = ['price', 'discounts__value']
+    ordering = ['-created_at']
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            self.permission_classes = [permissions.AllowAny]
+        else:
+            self.permission_classes = [IsModeratorOrAdmin]
+        return super().get_permissions()
 
 
 @extend_schema_view(
@@ -90,6 +130,54 @@ class DiscountViewSet(viewsets.ModelViewSet):
 class ProductDiscountHistoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = ProductDiscountHistory.objects.select_related("product", "discount").all()
     serializer_class = ProductDiscountHistorySerializer
+
+
+@extend_schema_view(
+    get=extend_schema(tags=["Wishlist"], summary="List wishlist items"),
+    post=extend_schema(tags=["Wishlist"], summary="Add product to wishlist"),
+)
+class WishlistListCreateView(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = WishlistItemSerializer
+
+    def get_queryset(self):
+        return (
+            WishlistItem.objects
+            .filter(user=self.request.user)
+            .select_related("product")
+            .prefetch_related("product__discount_history__discount")
+        )
+
+    def perform_create(self, serializer):
+        product = serializer.validated_data.get("product")
+        # Enforce: user can wishlist a product only once
+        WishlistItem.objects.get_or_create(user=self.request.user, product=product)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # get_or_create ensures uniqueness
+        obj, created = WishlistItem.objects.get_or_create(
+            user=request.user, product=serializer.validated_data["product"]
+        )
+        out = WishlistItemSerializer(obj)
+        status_code = status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        headers = self.get_success_headers(out.data)
+        return Response(out.data, status=status_code, headers=headers)
+
+
+@extend_schema_view(
+    delete=extend_schema(tags=["Wishlist"], summary="Remove product from wishlist"),
+)
+class WishlistDestroyView(generics.DestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = WishlistItemSerializer
+    lookup_url_kwarg = "product_id"
+
+    def get_object(self):
+        # Allow deletion by product id, not wishlist item id
+        product_id = self.kwargs.get(self.lookup_url_kwarg)
+        return generics.get_object_or_404(WishlistItem, user=self.request.user, product_id=product_id)
 
 
 @extend_schema_view(

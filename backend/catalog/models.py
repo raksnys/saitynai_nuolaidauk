@@ -196,12 +196,14 @@ class Product(TimeStampedModel):
         null=True,
         blank=True,
     )
+    external_id = models.CharField(max_length=255, null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="products")
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    photo_url = models.URLField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0'))])
-    price_unit = models.CharField(max_length=20, choices=PRICE_UNIT_CHOICES, default=PER_PIECE)
-    weight = models.DecimalField(max_digits=8, decimal_places=3, validators=[MinValueValidator(Decimal('0'))])
+    price_unit = models.CharField(max_length=20, choices=PRICE_UNIT_CHOICES, default=PER_PIECE, null=True, blank=True)
+    weight = models.DecimalField(max_digits=8, decimal_places=3, validators=[MinValueValidator(Decimal('0'))], null=True, blank=True)
     discounts = models.ManyToManyField(
         "Discount",
         through="ProductDiscountHistory",
@@ -211,7 +213,7 @@ class Product(TimeStampedModel):
 
     class Meta:
         ordering = ["name"]
-        unique_together = ("store", "name")
+        unique_together = ("brand", "external_id")
 
     def __str__(self) -> str:
         return self.name
@@ -245,3 +247,15 @@ class ProductDiscountHistory(models.Model):
     @property
     def is_active(self) -> bool:
         return self.removed_at is None or self.removed_at > timezone.now()
+
+
+class WishlistItem(TimeStampedModel):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="wishlist_items")
+    product = models.ForeignKey("Product", on_delete=models.CASCADE, related_name="wishlisted_by")
+
+    class Meta:
+        unique_together = ("user", "product")
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"{self.user_id} -> {self.product_id}"

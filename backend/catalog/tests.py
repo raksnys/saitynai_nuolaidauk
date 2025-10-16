@@ -15,6 +15,7 @@ from .models import (
     Product,
     ProductDiscountHistory,
     Store,
+    WishlistItem,
 )
 
 User = get_user_model()
@@ -149,6 +150,7 @@ class UserDiscountAPITests(APITestCase):
             weight=Decimal("0.500"),  # Added missing weight
         )
         self.list_create_url = reverse("catalog:user-discount-list-create")
+    self.wishlist_url = reverse("catalog:wishlist-list-create")
 
     def test_list_user_discounts(self):
         """
@@ -297,3 +299,48 @@ class UserDiscountAPITests(APITestCase):
         discount.ends_at = now - timezone.timedelta(minutes=1)
         discount.save()
         self.assertEqual(discount.effective_status, "ENDED")
+
+
+class WishlistAPITests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(email="wish@example.com", password="pw123456")
+        self.client.force_authenticate(user=self.user)
+
+        self.brand = Brand.objects.create(name="Wish Brand")
+        self.category = Category.objects.create(name="Wish Category")
+        self.store = Store.objects.create(brand=self.brand, address_line1="1 Road", city="Vilnius")
+        self.product = Product.objects.create(
+            store=self.store,
+            brand=self.brand,
+            category=self.category,
+            name="Wish Product",
+            price=Decimal("12.00"),
+            weight=Decimal("0.500"),
+        )
+        self.list_create_url = reverse("catalog:wishlist-list-create")
+
+    def test_add_and_list_wishlist(self):
+        # Add
+        res = self.client.post(self.list_create_url, {"product": self.product.id}, format="json")
+        self.assertIn(res.status_code, (status.HTTP_200_OK, status.HTTP_201_CREATED))
+        self.assertEqual(WishlistItem.objects.filter(user=self.user).count(), 1)
+
+        # List
+        res = self.client.get(self.list_create_url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res.data), 1)
+        self.assertEqual(res.data[0]["product"], self.product.id)
+
+    def test_uniqueness_per_user_product(self):
+        self.client.post(self.list_create_url, {"product": self.product.id}, format="json")
+        self.client.post(self.list_create_url, {"product": self.product.id}, format="json")
+        self.assertEqual(WishlistItem.objects.filter(user=self.user, product=self.product).count(), 1)
+
+    def test_remove_by_product_id(self):
+        # Add
+        self.client.post(self.list_create_url, {"product": self.product.id}, format="json")
+        # Remove
+        url = reverse("catalog:wishlist-destroy", kwargs={"product_id": self.product.id})
+        res = self.client.delete(url)
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(WishlistItem.objects.filter(user=self.user, product=self.product).exists())

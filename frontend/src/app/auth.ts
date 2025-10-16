@@ -38,6 +38,10 @@ export class Auth {
     this.authState.next(false);
   }
 
+  getAuthToken(): string | null {
+    return localStorage.getItem('jwt');
+  }
+
   getUser(): Observable<any> {
     return this.http.get(`${this.apiUrl}/user`, { withCredentials: true });
   }
@@ -47,6 +51,10 @@ export class Auth {
   }
 
   refreshToken(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/refresh`, {}, { withCredentials: true });
+    return this.http.post(`${this.apiUrl}/refresh`, {}, { withCredentials: true }).pipe(
+      tap((response: any) => {
+        localStorage.setItem('jwt', response.jwt);
+      })
+    );
   }
 }

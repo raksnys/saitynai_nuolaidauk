@@ -28,7 +28,7 @@ SECRET = os.getenv('JWT_SECRET', 'secret')
     description="Create an account. Returns the created user without the password.",
     request=UserSerializer,
     responses={
-        200: OpenApiResponse(UserSerializer, description="Created user"),
+        201: OpenApiResponse(UserSerializer, description="Created user"),
         400: OpenApiResponse(ErrorSerializer, description="Validation error")
     }
 )
@@ -39,7 +39,7 @@ class RegisterView(APIView):
         serializer = UserSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 @extend_schema(
     tags=["Auth"],

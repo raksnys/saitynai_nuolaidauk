@@ -62,3 +62,71 @@
 .large-widget {
     grid-column: span 2;
 }
+
+
+/* Responsive adjustments */
+
+@media (max-width: 1024px) {
+    .landing-page-container {
+        padding: 1.5rem;
+    }
+    .main-content {
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.25rem;
+    }
+    .widget {
+        padding: 1.25rem;
+    }
+    .widget h3 {
+        font-size: 1.15rem;
+    }
+    .widget p,
+    .widget ul {
+        font-size: 0.98rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .landing-page-container {
+        padding: 1.25rem;
+    }
+    .main-content {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    /* Ensure large widgets don't overflow grid on small screens */
+    .large-widget {
+        grid-column: span 1;
+    }
+    .widget {
+        padding: 1rem;
+    }
+    .widget h3 {
+        font-size: 1.05rem;
+    }
+    .widget h3 i {
+        font-size: 1.25rem;
+    }
+    .widget p,
+    .widget ul {
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+}
+
+@media (max-width: 480px) {
+    .landing-page-container {
+        padding: 1rem;
+    }
+    .widget h3 {
+        font-size: 1rem;
+    }
+    .widget h3 i {
+        font-size: 1.1rem;
+    }
+    .widget p,
+    .widget ul {
+        font-size: 0.92rem;
+        line-height: 1.45;
+    }
+}

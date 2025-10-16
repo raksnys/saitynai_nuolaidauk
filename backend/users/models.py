@@ -5,21 +5,18 @@ from datetime import timedelta
 from django.utils import timezone
 
 class User(AbstractUser):
-    objects = UserManager()
-    USER_ROLES = [
+    ROLE_CHOICES = (
         ('user', 'User'),
-        ('admin', 'Admin'),
         ('moderator', 'Moderator'),
-        ('guest', 'Guest')
-    ]
+        ('admin', 'Admin'),
+    )
+    objects = UserManager()
     
     name = models.CharField(max_length=255)
     email = models.CharField(max_length=255, unique=True)
     password = models.CharField(max_length=255)
-    role = models.CharField(max_length=20, choices=USER_ROLES, default='user')
-
-    #Sitie changes reikalinga, norint loginint su email ir password o ne username password
-    username = None
+    username = models.CharField(max_length=255, unique=False, null=True, blank=True)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user')
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []

@@ -1,6 +1,8 @@
 from rest_framework import serializers
-from .models import Product, Category, Discount, Store, Brand, ProductDiscountHistory
+from .models import Product, Category, Discount, Store, Brand, ProductDiscountHistory, WishlistItem
 from django.utils import timezone
+from decimal import Decimal
+from typing import Optional
 
 
 class UserDiscountListSerializer(serializers.ModelSerializer):
@@ -157,13 +159,13 @@ class BrandSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ("id", "created_at", "updated_at")
 
-    def get_stores_count(self, obj):
+    def get_stores_count(self, obj) -> int:
         return obj.stores.count()
 
-    def get_products_count(self, obj):
+    def get_products_count(self, obj) -> int:
         return obj.products.count()
 
-    def get_active_discounts_count(self, obj):
+    def get_active_discounts_count(self, obj) -> int:
         now = timezone.now()
         return Discount.objects.filter(
             product__brand=obj,
@@ -190,6 +192,8 @@ class StoreSerializer(serializers.ModelSerializer):
 
 
 class DiscountSerializer(serializers.ModelSerializer):
+    effective_status = serializers.CharField(read_only=True)
+
     class Meta:
         model = Discount
         fields = "__all__"
@@ -202,11 +206,29 @@ class DiscountSerializer(serializers.ModelSerializer):
 
 
 class ProductSerializer(serializers.ModelSerializer):
-    discounts = DiscountSerializer(many=True, read_only=True)
+    discounts = DiscountSerializer(many=True, read_only=True, source='discount_rules')
+    # expose the brand's human-readable name as a read-only field
+    brand_name = serializers.CharField(source='brand.name', read_only=True)
 
     class Meta:
         model = Product
-        fields = "__all__"
+        fields = [
+            "id",
+            "discounts",
+            "created_at",
+            "updated_at",
+            "external_id",
+            "name",
+            "description",
+            "photo_url",
+            "price",
+            "price_unit",
+            "weight",
+            "store",
+            "brand_name",
+            "brand",
+            "category",
+        ]
         read_only_fields = ("id", "created_at", "updated_at")
 
     def validate(self, attrs):
@@ -222,3 +244,70 @@ class ProductDiscountHistorySerializer(serializers.ModelSerializer):
         model = ProductDiscountHistory
         fields = "__all__"
         read_only_fields = ("id", "applied_at")
+
+
+class WishlistItemSerializer(serializers.ModelSerializer):
+    product_name = serializers.SerializerMethodField()
+    product_photo_url = serializers.SerializerMethodField()
+    price = serializers.SerializerMethodField()
+    discounted_price = serializers.SerializerMethodField()
+
+    class Meta:
+        model = WishlistItem
+        fields = ("id", "product", "product_name", "product_photo_url", "price", "discounted_price", "created_at")
+        read_only_fields = ("id", "created_at")
+
+    def get_product_name(self, obj: WishlistItem) -> Optional[str]:
+        return getattr(obj.product, "name", None)
+
+    def get_product_photo_url(self, obj: WishlistItem) -> Optional[str]:
+        return getattr(obj.product, "photo_url", None)
+
+    def get_price(self, obj: WishlistItem) -> Optional[Decimal]:
+        return obj.product.price if obj.product else None
+
+    def get_discounted_price(self, obj: WishlistItem) -> Optional[Decimal]:
+        """Return the best (lowest) discounted price if a discount is active; otherwise None.
+        Active means: current time between starts_at and ends_at. We do not hard-require
+        an APPROVED status here because upstream data may not consistently set it; the
+        time window is the source of truth for activity.
+        We first check direct discount rules on the product, then fall back to discount history.
+        """
+        product = obj.product
+        if not product:
+            return None
+
+        now = timezone.now()
+        price: Decimal = product.price
+        best: Optional[Decimal] = None
+
+        # 1) Check direct discount rules attached to the product
+        for disc in getattr(product, 'discount_rules', []).all() if hasattr(product, 'discount_rules') else []:
+            if disc.starts_at <= now <= disc.ends_at:
+                if disc.discount_type == Discount.PERCENTAGE:
+                    discounted = price * (Decimal('1') - (Decimal(disc.value) / Decimal('100')))
+                else:
+                    discounted = price - Decimal(disc.value)
+                if discounted < Decimal('0'):
+                    discounted = Decimal('0')
+                discounted = discounted.quantize(Decimal('0.01'))
+                best = discounted if best is None or discounted < best else best
+
+        # 2) Fallback to most recent active discount history entries
+        if best is None:
+            for hist in product.discount_history.select_related("discount").order_by("-applied_at"):
+                if hist.removed_at is not None and hist.removed_at <= now:
+                    continue
+                disc: Discount = hist.discount
+                if not disc or not (disc.starts_at <= now <= disc.ends_at):
+                    continue
+                if disc.discount_type == Discount.PERCENTAGE:
+                    discounted = price * (Decimal('1') - (Decimal(disc.value) / Decimal('100')))
+                else:
+                    discounted = price - Decimal(disc.value)
+                if discounted < Decimal('0'):
+                    discounted = Decimal('0')
+                best = discounted.quantize(Decimal('0.01'))
+                break  # history is ordered by newest first; first active suffices
+
+        return best

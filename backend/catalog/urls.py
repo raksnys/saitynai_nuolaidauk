@@ -9,6 +9,8 @@ from .views import (
     ProductViewSet,
     StoreViewSet,
     UserDiscountListCreateView,
+    WishlistListCreateView,
+    WishlistDestroyView,
 )
 
 app_name = "catalog"
@@ -24,6 +26,8 @@ router.register(r"product-discount-history", ProductDiscountHistoryViewSet, base
 urlpatterns = [
     # ... your other url patterns
     path("user/discounts/", UserDiscountListCreateView.as_view(), name="user-discount-list-create"),
+    path("user/wishlist/", WishlistListCreateView.as_view(), name="wishlist-list-create"),
+    path("user/wishlist/<int:product_id>/", WishlistDestroyView.as_view(), name="wishlist-destroy"),
 ]
 
 urlpatterns += router.urls

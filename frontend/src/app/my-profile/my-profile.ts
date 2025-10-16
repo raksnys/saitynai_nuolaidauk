@@ -2,11 +2,13 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Auth } from '../auth';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { WishlistService, WishlistItemDTO } from '../services/wishlist.service';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-my-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './my-profile.html',
   styleUrls: ['./my-profile.css']
 })
@@ -15,8 +17,10 @@ export class MyProfile implements OnInit {
   current_password = '';
   new_password = '';
   confirm_password = '';
+  wishlist: WishlistItemDTO[] = [];
+  isLoadingWishlist = true;
 
-  constructor(private authService: Auth, private cdr: ChangeDetectorRef) {}
+  constructor(private authService: Auth, private cdr: ChangeDetectorRef, private wishlistService: WishlistService) {}
 
   ngOnInit() {
     this.authService.getUser().subscribe({
@@ -26,6 +30,19 @@ export class MyProfile implements OnInit {
       },
       error: (error: any) => {
         console.error('Failed to get user profile', error);
+      }
+    });
+
+    this.wishlistService.getWishlist().subscribe({
+      next: (items) => {
+        this.wishlist = items;
+        this.isLoadingWishlist = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load wishlist', err);
+        this.isLoadingWishlist = false;
+        this.cdr.detectChanges();
       }
     });
   }

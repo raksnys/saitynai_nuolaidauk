@@ -1,0 +1,78 @@
+<div class="products-container">
+    <div class="filter-container">
+        <div class="filter-group">
+            <label for="min_price">Min Price:</label>
+            <input type="number" id="min_price" [(ngModel)]="filters.min_price">
+        </div>
+        <div class="filter-group">
+            <label for="max_price">Max Price:</label>
+            <input type="number" id="max_price" [(ngModel)]="filters.max_price">
+        </div>
+        <div class="filter-group">
+            <label for="brand">Brand:</label>
+            <select id="brand" [(ngModel)]="filters.brand">
+        <option value="">All</option>
+        @for(brand of brands; track brand.id) {
+          <option [value]="brand.name">{{ brand.name }}</option>
+        }
+      </select>
+        </div>
+        <div class="filter-group">
+            <label for="category">Category:</label>
+            <select id="category" [(ngModel)]="filters.category">
+        <option value="">All</option>
+        @for(category of categories; track category.id) {
+          <option [value]="category.name">{{ category.name }}</option>
+        }
+      </select>
+        </div>
+        <div class="filter-group">
+            <label for="ordering">Sort by:</label>
+            <select id="ordering" [(ngModel)]="filters.ordering">
+        <option value="">Default</option>
+        <option value="price">Price (Low to High)</option>
+        <option value="-price">Price (High to Low)</option>
+        <option value="discounts__value">Discount (Low to High)</option>
+        <option value="-discounts__value">Discount (High to Low)</option>
+      </select>
+        </div>
+        <div class="filter-buttons">
+            <button (click)="applyFilters()">Apply</button>
+            <button (click)="resetFilters()">Reset</button>
+        </div>
+    </div>
+
+    @if (isLoading) {
+    <div class="loading-container">
+        <p>Loading products...</p>
+    </div>
+    } @else if (error) {
+    <div class="error-container">
+        <p>{{ error }}</p>
+    </div>
+    } @else {
+    <div class="products-grid">
+        @for (product of products; track product.id) {
+        <div class="product-card">
+            <div class="photo-container">
+                <img [src]="product.photo_url" [alt]="product.name" class="product-photo">
+            </div>
+            <h3>{{ product.name }}</h3>
+            <div class="card-content">
+                <p>Price: {{ product.price }} €</p>
+                @if (product.discounts && product.discounts.length > 0) {
+                <p class="discount-price">Discount Price: {{ (product.price - product.discounts[0].value).toFixed(2) }} €</p>
+                }
+            </div>
+            <button [routerLink]="['/products', product.id]" class="temp-button">View Details</button>
+        </div>
+        }
+    </div>
+    }
+
+    <div class="pagination-controls">
+        <button (click)="previousPage()" [disabled]="currentPage === 1">Previous</button>
+        <span>Page {{ currentPage }} of {{ totalPages }}</span>
+        <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next</button>
+    </div>
+</div>

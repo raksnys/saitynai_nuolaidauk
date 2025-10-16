@@ -6,6 +6,7 @@ from .models import (
     Discount,
     Product,
     ProductDiscountHistory,
+    WishlistItem,
 )
 
 
@@ -63,3 +64,10 @@ class ProductDiscountHistoryAdmin(admin.ModelAdmin):
     list_display = ("product", "discount", "applied_at", "removed_at", "applied_price")
     list_filter = ("discount",)
     autocomplete_fields = ("product", "discount")
+
+
+@admin.register(WishlistItem)
+class WishlistItemAdmin(admin.ModelAdmin):
+    list_display = ("user", "product", "created_at")
+    search_fields = ("user__email", "product__name")
+    autocomplete_fields = ("user", "product")
