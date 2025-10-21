@@ -1,0 +1,107 @@
+.reports-container {
+    padding: 2rem;
+    color: white;
+}
+
+.reports-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(80px);
+    -webkit-backdrop-filter: blur(80px);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 1rem;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 0.75rem 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+thead th {
+    color: #cbd5e1;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.badge {
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    display: inline-block;
+}
+
+.badge.reported {
+    background: #4c1d95;
+    color: #e9d5ff;
+}
+
+.badge.accepted {
+    background: #064e3b;
+    color: #a7f3d0;
+}
+
+.badge.denied {
+    background: #7f1d1d;
+    color: #fecaca;
+}
+
+.desc {
+    max-width: 440px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.btn {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-right: 0.5rem;
+    transition: background-color 0.2s;
+}
+
+.btn:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.error-box {
+    background: rgba(255, 107, 107, 0.1);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    padding: 1rem;
+    color: #ff6b6b;
+    margin-bottom: 1rem;
+}
+
+.link {
+    color: #93c5fd;
+    text-decoration: none;
+}
+
+.link:hover {
+    text-decoration: underline;
+}

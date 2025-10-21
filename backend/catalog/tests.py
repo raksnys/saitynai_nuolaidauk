@@ -16,6 +16,7 @@ from .models import (
     ProductDiscountHistory,
     Store,
     WishlistItem,
+    Report,
 )
 
 User = get_user_model()
@@ -150,7 +151,6 @@ class UserDiscountAPITests(APITestCase):
             weight=Decimal("0.500"),  # Added missing weight
         )
         self.list_create_url = reverse("catalog:user-discount-list-create")
-    self.wishlist_url = reverse("catalog:wishlist-list-create")
 
     def test_list_user_discounts(self):
         """
@@ -201,7 +201,7 @@ class UserDiscountAPITests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         discount = Discount.objects.get(id=response.data["id"])
         self.assertEqual(discount.submitted_by, self.user)
-        self.assertEqual(discount.status, Discount.STATUS_IN_REVIEW)
+        self.assertEqual(discount.status, Discount.DiscountStatus.IN_REVIEW)
         self.assertEqual(discount.target_type, Discount.TARGET_PRODUCT)
         self.assertEqual(discount.product, self.product)
 
@@ -234,7 +234,7 @@ class UserDiscountAPITests(APITestCase):
         new_product = Product.objects.get(name="Brand New Gadget")
         discount = Discount.objects.get(id=response.data["id"])
         self.assertEqual(discount.product, new_product)
-        self.assertEqual(discount.status, Discount.STATUS_IN_REVIEW)
+        self.assertEqual(discount.status, Discount.DiscountStatus.IN_REVIEW)
 
     def test_create_discount_validation_error(self):
         """
@@ -281,12 +281,12 @@ class UserDiscountAPITests(APITestCase):
         self.assertEqual(discount.effective_status, "IN_REVIEW")
 
         # Status: DENIED
-        discount.status = Discount.STATUS_DENIED
+        discount.status = Discount.DiscountStatus.DENIED
         discount.save()
         self.assertEqual(discount.effective_status, "DENIED")
 
         # Status: APPROVED (future start date)
-        discount.status = Discount.STATUS_APPROVED
+        discount.status = Discount.DiscountStatus.APPROVED
         discount.save()
         self.assertEqual(discount.effective_status, "APPROVED")
 
@@ -344,3 +344,170 @@ class WishlistAPITests(APITestCase):
         res = self.client.delete(url)
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(WishlistItem.objects.filter(user=self.user, product=self.product).exists())
+
+
+class ReportModelTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(email="repmodel@example.com", password="pw123456")
+        self.brand = Brand.objects.create(name="Rep Brand")
+        self.category = Category.objects.create(name="Rep Category")
+        self.store = Store.objects.create(brand=self.brand, address_line1="1 Rd", city="Vilnius")
+        self.product = Product.objects.create(
+            store=self.store,
+            brand=self.brand,
+            category=self.category,
+            name="Reportable Product",
+            price=Decimal("5.00"),
+            weight=Decimal("0.300"),
+        )
+
+    def test_requires_exactly_one_target(self):
+        # Neither set
+        r = Report(description="None", reported_by=self.user)
+        with self.assertRaises(ValidationError):
+            r.full_clean()
+
+        # Both set
+        disc = Discount.objects.create(
+            name="Tmp",
+            discount_type=Discount.FIXED,
+            value=1,
+            target_type=Discount.TARGET_PRODUCT,
+            product=self.product,
+            submitted_by=self.user,
+            starts_at=timezone.now(),
+            ends_at=timezone.now() + timezone.timedelta(days=1),
+        )
+        r2 = Report(product=self.product, discount=disc, description="Both", reported_by=self.user)
+        with self.assertRaises(ValidationError):
+            r2.full_clean()
+
+    def test_product_report_requires_reason(self):
+        r = Report(product=self.product, description="Missing reason", reported_by=self.user)
+        with self.assertRaises(ValidationError):
+            r.full_clean()
+
+        r2 = Report(
+            product=self.product,
+            product_reason=Report.PRODUCT_REASON_NAME,
+            description="OK",
+            reported_by=self.user,
+        )
+        r2.full_clean()
+        r2.save()
+
+    def test_discount_report_requires_image(self):
+        now = timezone.now()
+        disc = Discount.objects.create(
+            name="Dsc",
+            discount_type=Discount.PERCENTAGE,
+            value=10,
+            target_type=Discount.TARGET_CATEGORY,
+            category=self.category,
+            submitted_by=self.user,
+            starts_at=now,
+            ends_at=now + timezone.timedelta(days=1),
+        )
+        r = Report(discount=disc, description="No image", reported_by=self.user)
+        with self.assertRaises(ValidationError):
+            r.full_clean()
+
+        r2 = Report(discount=disc, discount_image_base64="AAA", description="OK", reported_by=self.user)
+        r2.full_clean()
+        r2.save()
+
+
+class ReportAPITests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(email="reporter@example.com", password="pw123456")
+        self.moderator = User.objects.create_user(email="mod@example.com", password="pw123456", role="moderator")
+        self.client.force_authenticate(user=self.user)
+
+        self.brand = Brand.objects.create(name="API Brand")
+        self.category = Category.objects.create(name="API Category")
+        self.store = Store.objects.create(brand=self.brand, address_line1="2 Rd", city="Vilnius")
+        self.product = Product.objects.create(
+            store=self.store,
+            brand=self.brand,
+            category=self.category,
+            name="API Product",
+            price=Decimal("7.00"),
+            weight=Decimal("0.400"),
+        )
+        now = timezone.now()
+        self.discount = Discount.objects.create(
+            name="API Disc",
+            discount_type=Discount.FIXED,
+            value=1,
+            target_type=Discount.TARGET_PRODUCT,
+            product=self.product,
+            submitted_by=self.user,
+            starts_at=now,
+            ends_at=now + timezone.timedelta(days=1),
+        )
+
+        self.create_url = reverse("catalog:report-create")
+        self.mod_list_url = reverse("catalog:report-list")
+
+    def test_user_can_create_product_report(self):
+        data = {
+            "product": self.product.id,
+            "product_reason": Report.PRODUCT_REASON_NAME,
+            "description": "Wrong name on label",
+        }
+        res = self.client.post(self.create_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(res.data["status"], Report.ReportStatus.REPORTED)
+        rep = Report.objects.get(id=res.data["id"])
+        self.assertEqual(rep.reported_by, self.user)
+
+    def test_user_can_create_discount_report(self):
+        data = {
+            "discount": self.discount.id,
+            "discount_image_base64": "AAA",
+            "description": "Receipt proof",
+        }
+        res = self.client.post(self.create_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+    def test_unauthenticated_cannot_create(self):
+        self.client.force_authenticate(user=None)
+        data = {"product": self.product.id, "product_reason": Report.PRODUCT_REASON_NAME, "description": "x"}
+        res = self.client.post(self.create_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_moderator_can_list_and_update(self):
+        # create a report
+        rep = Report.objects.create(
+            product=self.product,
+            product_reason=Report.PRODUCT_REASON_PRICE,
+            description="Too high",
+            reported_by=self.user,
+        )
+        # list as moderator
+        self.client.force_authenticate(user=self.moderator)
+        res = self.client.get(self.mod_list_url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(res.data), 1)
+
+        # update status
+        detail_url = reverse("catalog:report-detail", kwargs={"pk": rep.id})
+        res2 = self.client.patch(detail_url, {"status": Report.ReportStatus.ACCEPTED}, format="json")
+        self.assertEqual(res2.status_code, status.HTTP_200_OK)
+        rep.refresh_from_db()
+        self.assertEqual(rep.status, Report.ReportStatus.ACCEPTED)
+
+    def test_non_moderator_cannot_access_moderation(self):
+        rep = Report.objects.create(
+            product=self.product,
+            product_reason=Report.PRODUCT_REASON_NAME,
+            description="x",
+            reported_by=self.user,
+        )
+        # list as normal user
+        res = self.client.get(self.mod_list_url)
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+        # patch as normal user
+        detail_url = reverse("catalog:report-detail", kwargs={"pk": rep.id})
+        res2 = self.client.patch(detail_url, {"status": Report.ReportStatus.DENIED}, format="json")
+        self.assertEqual(res2.status_code, status.HTTP_403_FORBIDDEN)

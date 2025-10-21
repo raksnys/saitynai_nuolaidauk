@@ -3,8 +3,10 @@ from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
 from rest_framework.filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
+from fuzzywuzzy import process
+from rest_framework.decorators import action
 
-from .models import Brand, Category, Discount, Product, ProductDiscountHistory, Store, WishlistItem
+from .models import Brand, Category, Discount, Product, ProductDiscountHistory, Store, WishlistItem, Report
 from .pagination import StandardResultsSetPagination
 from .filters import ProductFilter
 from .serializers import (
@@ -17,6 +19,8 @@ from .serializers import (
     UserDiscountCreateSerializer,
     UserDiscountListSerializer,
     WishlistItemSerializer,
+    ReportCreateSerializer,
+    ReportModerationSerializer,
 )
 from users.helpers.permissions import IsModeratorOrAdmin
 
@@ -99,11 +103,31 @@ class ProductViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_class = ProductFilter
-    ordering_fields = ['price', 'discounts__value']
-    ordering = ['-created_at']
+    ordering_fields = ["name", "price"]
+
+    @action(detail=False, methods=['get'], url_path='search')
+    def search(self, request):
+        query = request.query_params.get('q', None)
+        if not query:
+            return Response({"error": "Query parameter 'q' is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        products = Product.objects.all()
+        product_names = [p.name for p in products]
+        
+        # Use fuzzywuzzy to find matches
+        matches = process.extract(query, product_names, limit=10)
+        
+        # Get the product IDs of the best matches
+        matched_product_names = [match[0] for match in matches if match[1] > 75] # score threshold
+        
+        # Retrieve the full product objects
+        matched_products = Product.objects.filter(name__in=matched_product_names)
+        
+        serializer = self.get_serializer(matched_products, many=True)
+        return Response(serializer.data)
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
+        if self.action in ['list', 'retrieve', 'search']:
             self.permission_classes = [permissions.AllowAny]
         else:
             self.permission_classes = [IsModeratorOrAdmin]
@@ -178,6 +202,47 @@ class WishlistDestroyView(generics.DestroyAPIView):
         # Allow deletion by product id, not wishlist item id
         product_id = self.kwargs.get(self.lookup_url_kwarg)
         return generics.get_object_or_404(WishlistItem, user=self.request.user, product_id=product_id)
+
+
+@extend_schema_view(
+    post=extend_schema(tags=["Reports"], summary="Report a product or a discount"),
+)
+class ReportCreateView(generics.CreateAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ReportCreateSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        obj = serializer.save()
+        out = ReportModerationSerializer(obj)
+        headers = self.get_success_headers(out.data)
+        return Response(out.data, status=status.HTTP_201_CREATED, headers=headers)
+
+
+@extend_schema_view(
+    get=extend_schema(tags=["Reports"], summary="List reported items (moderation)")
+)
+class ReportModerationListView(generics.ListAPIView):
+    permission_classes = [IsModeratorOrAdmin]
+    serializer_class = ReportModerationSerializer
+
+    def get_queryset(self):
+        qs = Report.objects.select_related("product", "discount", "reported_by").all().order_by("-created_at")
+        status_param = self.request.query_params.get("status")
+        if status_param:
+            qs = qs.filter(status=status_param)
+        return qs
+
+
+@extend_schema_view(
+    get=extend_schema(tags=["Reports"], summary="Retrieve a report (moderation)"),
+    patch=extend_schema(tags=["Reports"], summary="Update report status (moderation)"),
+)
+class ReportModerationDetailView(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsModeratorOrAdmin]
+    serializer_class = ReportModerationSerializer
+    queryset = Report.objects.select_related("product", "discount", "reported_by").all()
 
 
 @extend_schema_view(

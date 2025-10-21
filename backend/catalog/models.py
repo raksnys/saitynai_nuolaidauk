@@ -81,14 +81,10 @@ class Discount(TimeStampedModel):
         (TARGET_BRAND, "Brand"),
     ]
 
-    STATUS_IN_REVIEW = "in_review"
-    STATUS_APPROVED = "approved"
-    STATUS_DENIED = "denied"
-    STATUS_CHOICES = [
-        (STATUS_IN_REVIEW, "In Review"),
-        (STATUS_APPROVED, "Approved"),
-        (STATUS_DENIED, "Denied"),
-    ]
+    class DiscountStatus(models.TextChoices):
+        IN_REVIEW = "in_review", "In Review"
+        APPROVED = "approved", "Approved"
+        DENIED = "denied", "Denied"
 
     name = models.CharField(max_length=255)
     description = models.TextField(blank=True)
@@ -119,7 +115,7 @@ class Discount(TimeStampedModel):
     starts_at = models.DateTimeField()
     ends_at = models.DateTimeField()
     status = models.CharField(
-        max_length=20, choices=STATUS_CHOICES, default=STATUS_IN_REVIEW
+        max_length=20, choices=DiscountStatus.choices, default=DiscountStatus.IN_REVIEW
     )
     submitted_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -144,11 +140,11 @@ class Discount(TimeStampedModel):
     @property
     def effective_status(self) -> str:
         """Returns the calculated status based on current time."""
-        if self.status == self.STATUS_IN_REVIEW:
+        if self.status == self.DiscountStatus.IN_REVIEW:
             return "IN_REVIEW"
-        if self.status == self.STATUS_DENIED:
+        if self.status == self.DiscountStatus.DENIED:
             return "DENIED"
-        if self.status == self.STATUS_APPROVED:
+        if self.status == self.DiscountStatus.APPROVED:
             now = timezone.now()
             if self.ends_at < now:
                 return "ENDED"
@@ -199,9 +195,9 @@ class Product(TimeStampedModel):
     external_id = models.CharField(max_length=255, null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="products")
     name = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True, null=True)
     photo_url = models.URLField(blank=True)
-    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0'))])
+    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0'))], null=True, blank=True)
     price_unit = models.CharField(max_length=20, choices=PRICE_UNIT_CHOICES, default=PER_PIECE, null=True, blank=True)
     weight = models.DecimalField(max_digits=8, decimal_places=3, validators=[MinValueValidator(Decimal('0'))], null=True, blank=True)
     discounts = models.ManyToManyField(
@@ -259,3 +255,82 @@ class WishlistItem(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"{self.user_id} -> {self.product_id}"
+
+
+class Report(TimeStampedModel):
+    """A user report targeting either a product or a discount.
+    Requirements:
+    - If reporting a product: a single reason must be selected (name/photo/price)
+    - If reporting a discount: an image (base64) must be provided
+    - Both must include a textual description
+    - Moderators/Admins can change status from REPORTED to ACCEPTED or DENIED
+    """
+
+    class ReportStatus(models.TextChoices):
+        REPORTED = "REPORTED", "Reported"
+        ACCEPTED = "ACCEPTED", "Accepted"
+        DENIED = "DENIED", "Denied"
+
+    PRODUCT_REASON_NAME = "name"
+    PRODUCT_REASON_PHOTO = "photo"
+    PRODUCT_REASON_PRICE = "price"
+    PRODUCT_REASON_CHOICES = [
+        (PRODUCT_REASON_NAME, "Name"),
+        (PRODUCT_REASON_PHOTO, "Photo"),
+        (PRODUCT_REASON_PRICE, "Price"),
+    ]
+
+    # Target: exactly one of product or discount
+    product = models.ForeignKey(
+        "Product", null=True, blank=True, on_delete=models.CASCADE, related_name="reports"
+    )
+    discount = models.ForeignKey(
+        "Discount", null=True, blank=True, on_delete=models.CASCADE, related_name="reports"
+    )
+
+    # For product reports, a single reason is selected
+    product_reason = models.CharField(max_length=16, choices=PRODUCT_REASON_CHOICES, null=True, blank=True)
+
+    # For discount reports, an image in base64 is required
+    discount_image_base64 = models.TextField(blank=True)
+
+    # Free-form description required for both
+    description = models.TextField()
+
+    # Workflow status
+    status = models.CharField(max_length=16, choices=ReportStatus.choices, default=ReportStatus.REPORTED)
+
+    # Reporter
+    reported_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="reports_submitted",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            # XOR: exactly one of product or discount must be set
+            models.CheckConstraint(
+                name="report_exactly_one_target",
+                check=(
+                    (models.Q(product__isnull=False) & models.Q(discount__isnull=True))
+                    | (models.Q(product__isnull=True) & models.Q(discount__isnull=False))
+                ),
+            )
+        ]
+
+    def clean(self) -> None:
+        if bool(self.product) == bool(self.discount):
+            raise ValidationError("Exactly one of product or discount must be provided.")
+        if self.product and not self.product_reason:
+            raise ValidationError("Product reports must include a product_reason.")
+        if self.discount and not self.discount_image_base64:
+            raise ValidationError("Discount reports must include a base64 image.")
+        if not self.description:
+            raise ValidationError("Description is required.")
+
+    def __str__(self) -> str:
+        target = f"product={self.product_id}" if self.product_id else f"discount={self.discount_id}"
+        return f"Report({target}, status={self.status})"

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, Category, Discount, Store, Brand, ProductDiscountHistory, WishlistItem
+from .models import Product, Category, Discount, Store, Brand, ProductDiscountHistory, WishlistItem, Report
 from django.utils import timezone
 from decimal import Decimal
 from typing import Optional
@@ -171,7 +171,7 @@ class BrandSerializer(serializers.ModelSerializer):
             product__brand=obj,
             starts_at__lte=now,
             ends_at__gte=now,
-            status=Discount.STATUS_APPROVED
+            status=Discount.DiscountStatus.APPROVED
         ).count()
 
 
@@ -311,3 +311,65 @@ class WishlistItemSerializer(serializers.ModelSerializer):
                 break  # history is ordered by newest first; first active suffices
 
         return best
+
+
+class ReportCreateSerializer(serializers.ModelSerializer):
+    """Serializer for users to report a product or a discount.
+    Rules enforced:
+    - Exactly one of product or discount is provided
+    - If product is provided, product_reason must be one of: name/photo/price
+    - If discount is provided, discount_image_base64 is required
+    - Description is required
+    """
+
+    class Meta:
+        model = Report
+        fields = [
+            "id",
+            "product",
+            "discount",
+            "product_reason",
+            "discount_image_base64",
+            "description",
+            "status",
+            "created_at",
+        ]
+        read_only_fields = ("id", "status", "created_at")
+
+    def validate(self, attrs):
+        product = attrs.get("product")
+        discount = attrs.get("discount")
+        reason = attrs.get("product_reason")
+        img_b64 = attrs.get("discount_image_base64", "")
+
+        if bool(product) == bool(discount):
+            raise serializers.ValidationError("Exactly one of 'product' or 'discount' must be provided.")
+        if product and not reason:
+            raise serializers.ValidationError({"product_reason": "Product reports require a reason."})
+        if discount and not img_b64:
+            raise serializers.ValidationError({"discount_image_base64": "Discount reports require a base64 image."})
+        if not attrs.get("description"):
+            raise serializers.ValidationError({"description": "Description is required."})
+        return attrs
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        return Report.objects.create(reported_by=getattr(request, "user", None), **validated_data)
+
+
+class ReportModerationSerializer(serializers.ModelSerializer):
+    """Serializer for moderators/admins to view and update report status."""
+
+    class Meta:
+        model = Report
+        fields = [
+            "id",
+            "product",
+            "discount",
+            "product_reason",
+            "discount_image_base64",
+            "description",
+            "status",
+            "created_at",
+        ]
+        read_only_fields = ("id", "product", "discount", "product_reason", "discount_image_base64", "description", "created_at")

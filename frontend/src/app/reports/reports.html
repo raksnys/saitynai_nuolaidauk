@@ -1,0 +1,58 @@
+<div class="reports-container">
+    <h1>Reports Moderation</h1>
+
+    @if (error) {
+    <div class="error-box">{{ error }}</div>
+    } @else if (loading) {
+    <div class="loading-container">
+        <p>Loading...</p>
+    </div>
+    } @else {
+    <div class="reports-card">
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Target</th>
+                        <th>Reason</th>
+                        <th>Description</th>
+                        <th>Created</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (reports.length === 0) {
+                    <tr>
+                        <td colspan="7" style="text-align:center; opacity:0.8;">No reports at the moment.</td>
+                    </tr>
+                    } @else { @for (r of reports; track r.id) {
+                    <tr>
+                        <td>{{ r.id }}</td>
+                        <td>
+                            @if (r.product) {
+                            <a [routerLink]="['/products', r.product]" class="link">
+                                                                {{ productNames[r.product] || ('Product #' + r.product) }}
+                                                            </a> } @else if (r.discount) { Discount #{{ r.discount }} } @else { - }
+                        </td>
+                        <td>{{ r.product_reason || '-' }}</td>
+                        <td class="desc" [title]="r.description">{{ r.description }}</td>
+                        <td>{{ r.created_at | date:'short' }}</td>
+                        <td>
+                            <span class="badge" [class.reported]="r.status==='REPORTED'" [class.accepted]="r.status==='ACCEPTED'" [class.denied]="r.status==='DENIED'">
+                                            {{ r.status }}
+                                        </span>
+                        </td>
+                        <td>
+                            <button class="btn" (click)="setStatus(r, 'ACCEPTED')" [disabled]="r.status==='ACCEPTED' || r.status==='DENIED' || updatingId===r.id">Accept</button>
+                            <button class="btn" (click)="setStatus(r, 'DENIED')" [disabled]="r.status==='DENIED' || updatingId===r.id">Deny</button>
+                        </td>
+                    </tr>
+                    } }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    }
+</div>

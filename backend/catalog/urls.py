@@ -11,6 +11,9 @@ from .views import (
     UserDiscountListCreateView,
     WishlistListCreateView,
     WishlistDestroyView,
+    ReportCreateView,
+    ReportModerationListView,
+    ReportModerationDetailView,
 )
 
 app_name = "catalog"
@@ -28,6 +31,10 @@ urlpatterns = [
     path("user/discounts/", UserDiscountListCreateView.as_view(), name="user-discount-list-create"),
     path("user/wishlist/", WishlistListCreateView.as_view(), name="wishlist-list-create"),
     path("user/wishlist/<int:product_id>/", WishlistDestroyView.as_view(), name="wishlist-destroy"),
+    # Reports
+    path('reports/', ReportCreateView.as_view(), name='report-create'),  # POST by authenticated users
+    path('reports/moderation/', ReportModerationListView.as_view(), name='report-list'),  # GET by moderators/admins
+    path('reports/moderation/<int:pk>/', ReportModerationDetailView.as_view(), name='report-detail'),  # GET/PATCH by moderators/admins
 ]
 
 urlpatterns += router.urls

@@ -1,0 +1,34 @@
+<div class="products-container">
+    <h1>Search Results for "{{ query }}"</h1>
+
+    @if (error) {
+    <div class="error-box">{{ error }}</div>
+    } @else if (loading) {
+    <div class="loading-container">
+        <p>Searching...</p>
+    </div>
+    } @else { @if (products.length > 0) {
+    <div class="products-grid">
+        @for (p of products; track p.id) {
+        <div class="product-card" [routerLink]="['/products', p.id]">
+            <div class="photo-container">
+                <img [src]="p.photo_url" [alt]="p.name" class="product-photo">
+            </div>
+            <h3>{{ p.name }}</h3>
+            <div class="card-content">
+                @if (p.discounts && p.discounts.length > 0) {
+                <p class="discount-price">Discount Price: {{ (p.price - p.discounts[0].value).toFixed(2) }} €</p>
+                <p><s>Price: {{ p.price }} €</s></p>
+                } @else {
+                <p>Price: {{ p.price }} €</p>
+                }
+            </div>
+        </div>
+        }
+    </div>
+    } @else {
+    <div class="no-results">
+        <p>No products found matching your search.</p>
+    </div>
+    } }
+</div>

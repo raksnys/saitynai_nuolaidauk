@@ -98,6 +98,13 @@ SPECTACULAR_SETTINGS = {
     'SECURITY': [
         {'jwtCookieAuth': []},
     ],
+    # Explicit enum name overrides to avoid collisions on fields with the same name (e.g. multiple "status" fields)
+    # See https://drf-spectacular.readthedocs.io/en/latest/faq.html#i-get-warnings-regarding-my-enum-or-my-enum-names-have-a-weird-suffix
+    'ENUM_NAME_OVERRIDES': {
+        # Explicit lists to avoid auto-suffix collisions for multiple fields named "status"
+        'DiscountStatusEnum': ['in_review', 'approved', 'denied'],
+        'ReportStatusEnum': ['REPORTED', 'ACCEPTED', 'DENIED'],
+    },
 }
 
 WSGI_APPLICATION = 'core.wsgi.application'

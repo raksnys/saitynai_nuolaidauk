@@ -9,7 +9,18 @@ SECRET = os.getenv('JWT_SECRET', os.getenv('DJANGO_SECRET_KEY', 'secret'))
 
 class JWTAuthentication(BaseAuthentication):
     def authenticate(self, request):
-        token = request.COOKIES.get('jwt')
+        token = None
+
+        # 1) Try Authorization: Bearer <token>
+        auth_header = request.headers.get('Authorization') or request.META.get('HTTP_AUTHORIZATION')
+        if auth_header and isinstance(auth_header, str):
+            parts = auth_header.split()
+            if len(parts) == 2 and parts[0].lower() == 'bearer':
+                token = parts[1]
+
+        # 2) Fallback to cookie-based token
+        if not token:
+            token = request.COOKIES.get('jwt')
         if not token:
             return None
 
@@ -22,6 +33,4 @@ class JWTAuthentication(BaseAuthentication):
             user = User.objects.get(id=payload['id'])
         except User.DoesNotExist:
             raise AuthenticationFailed('User not found')
-
-        # user = User.objects.get(id=payload['id'])
         return (user, token)

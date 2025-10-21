@@ -2,10 +2,17 @@
     <div class="logo">
         <a routerLink="/">Nuolaidauk</a>
     </div>
+    <div class="search-container">
+        <form (ngSubmit)="onSearch()">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-input" placeholder="Search for products..." [(ngModel)]="searchQuery" name="searchQuery">
+        </form>
+    </div>
     <nav class="navigation">
         <a routerLink="/products">Products</a> @if (isLoggedIn$ | async) {
         <a routerLink="/stores">Stores</a>
-        <a routerLink="/my-profile">My Profile</a>
+        <a routerLink="/my-profile">My Profile</a> @if ((role$ | async) === 'admin' || (role$ | async) === 'moderator') {
+        <a routerLink="/reports">Reports</a> }
         <a href="#" (click)="logout($event)">Logout</a> } @else {
         <a routerLink="/login">Login</a>
         <a routerLink="/register">Register</a> }

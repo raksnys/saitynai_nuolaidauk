@@ -7,9 +7,11 @@ paths:
   /api/catalog/brands/:
     get:
       operationId: api_catalog_brands_list
+      summary: List brands
       tags:
-      - api
+      - Brands
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       - {}
       responses:
@@ -23,8 +25,9 @@ paths:
           description: ''
     post:
       operationId: api_catalog_brands_create
+      summary: Create brand
       tags:
-      - api
+      - Brands
       requestBody:
         content:
           application/json:
@@ -39,7 +42,7 @@ paths:
         required: true
       security:
       - jwtCookieAuth: []
-      - {}
+      - jwtCookieAuth: []
       responses:
         '201':
           content:
@@ -50,6 +53,7 @@ paths:
   /api/catalog/brands/{id}/:
     get:
       operationId: api_catalog_brands_retrieve
+      summary: Get brand
       parameters:
       - in: path
         name: id
@@ -58,8 +62,9 @@ paths:
         description: A unique integer value identifying this brand.
         required: true
       tags:
-      - api
+      - Brands
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       - {}
       responses:
@@ -71,6 +76,7 @@ paths:
           description: ''
     put:
       operationId: api_catalog_brands_update
+      summary: Update brand
       parameters:
       - in: path
         name: id
@@ -79,7 +85,7 @@ paths:
         description: A unique integer value identifying this brand.
         required: true
       tags:
-      - api
+      - Brands
       requestBody:
         content:
           application/json:
@@ -94,7 +100,7 @@ paths:
         required: true
       security:
       - jwtCookieAuth: []
-      - {}
+      - jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -104,6 +110,7 @@ paths:
           description: ''
     patch:
       operationId: api_catalog_brands_partial_update
+      summary: Partially update brand
       parameters:
       - in: path
         name: id
@@ -112,7 +119,7 @@ paths:
         description: A unique integer value identifying this brand.
         required: true
       tags:
-      - api
+      - Brands
       requestBody:
         content:
           application/json:
@@ -126,7 +133,7 @@ paths:
               $ref: '#/components/schemas/PatchedBrand'
       security:
       - jwtCookieAuth: []
-      - {}
+      - jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -136,6 +143,7 @@ paths:
           description: ''
     delete:
       operationId: api_catalog_brands_destroy
+      summary: Delete brand
       parameters:
       - in: path
         name: id
@@ -144,19 +152,21 @@ paths:
         description: A unique integer value identifying this brand.
         required: true
       tags:
-      - api
+      - Brands
       security:
       - jwtCookieAuth: []
-      - {}
+      - jwtCookieAuth: []
       responses:
         '204':
           description: No response body
   /api/catalog/categories/:
     get:
       operationId: api_catalog_categories_list
+      summary: List categories
       tags:
-      - api
+      - Categories
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       - {}
       responses:
@@ -170,8 +180,9 @@ paths:
           description: ''
     post:
       operationId: api_catalog_categories_create
+      summary: Create category
       tags:
-      - api
+      - Categories
       requestBody:
         content:
           application/json:
@@ -186,7 +197,7 @@ paths:
         required: true
       security:
       - jwtCookieAuth: []
-      - {}
+      - jwtCookieAuth: []
       responses:
         '201':
           content:
@@ -197,6 +208,7 @@ paths:
   /api/catalog/categories/{id}/:
     get:
       operationId: api_catalog_categories_retrieve
+      summary: Get category
       parameters:
       - in: path
         name: id
@@ -205,8 +217,9 @@ paths:
         description: A unique integer value identifying this category.
         required: true
       tags:
-      - api
+      - Categories
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       - {}
       responses:
@@ -218,6 +231,7 @@ paths:
           description: ''
     put:
       operationId: api_catalog_categories_update
+      summary: Update category
       parameters:
       - in: path
         name: id
@@ -226,7 +240,7 @@ paths:
         description: A unique integer value identifying this category.
         required: true
       tags:
-      - api
+      - Categories
       requestBody:
         content:
           application/json:
@@ -241,7 +255,7 @@ paths:
         required: true
       security:
       - jwtCookieAuth: []
-      - {}
+      - jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -251,6 +265,7 @@ paths:
           description: ''
     patch:
       operationId: api_catalog_categories_partial_update
+      summary: Partially update category
       parameters:
       - in: path
         name: id
@@ -259,7 +274,7 @@ paths:
         description: A unique integer value identifying this category.
         required: true
       tags:
-      - api
+      - Categories
       requestBody:
         content:
           application/json:
@@ -273,7 +288,7 @@ paths:
               $ref: '#/components/schemas/PatchedCategory'
       security:
       - jwtCookieAuth: []
-      - {}
+      - jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -283,6 +298,7 @@ paths:
           description: ''
     delete:
       operationId: api_catalog_categories_destroy
+      summary: Delete category
       parameters:
       - in: path
         name: id
@@ -291,19 +307,21 @@ paths:
         description: A unique integer value identifying this category.
         required: true
       tags:
-      - api
+      - Categories
       security:
       - jwtCookieAuth: []
-      - {}
+      - jwtCookieAuth: []
       responses:
         '204':
           description: No response body
   /api/catalog/discounts/:
     get:
       operationId: api_catalog_discounts_list
+      summary: List discounts
       tags:
-      - api
+      - Discounts
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       - {}
       responses:
@@ -317,8 +335,9 @@ paths:
           description: ''
     post:
       operationId: api_catalog_discounts_create
+      summary: Create discount
       tags:
-      - api
+      - Discounts
       requestBody:
         content:
           application/json:
@@ -332,6 +351,7 @@ paths:
               $ref: '#/components/schemas/Discount'
         required: true
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       - {}
       responses:
@@ -344,6 +364,7 @@ paths:
   /api/catalog/discounts/{id}/:
     get:
       operationId: api_catalog_discounts_retrieve
+      summary: Get discount
       parameters:
       - in: path
         name: id
@@ -352,8 +373,9 @@ paths:
         description: A unique integer value identifying this discount.
         required: true
       tags:
-      - api
+      - Discounts
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       - {}
       responses:
@@ -365,6 +387,7 @@ paths:
           description: ''
     put:
       operationId: api_catalog_discounts_update
+      summary: Update discount
       parameters:
       - in: path
         name: id
@@ -373,7 +396,7 @@ paths:
         description: A unique integer value identifying this discount.
         required: true
       tags:
-      - api
+      - Discounts
       requestBody:
         content:
           application/json:
@@ -387,6 +410,7 @@ paths:
               $ref: '#/components/schemas/Discount'
         required: true
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       - {}
       responses:
@@ -398,6 +422,7 @@ paths:
           description: ''
     patch:
       operationId: api_catalog_discounts_partial_update
+      summary: Partially update discount
       parameters:
       - in: path
         name: id
@@ -406,7 +431,7 @@ paths:
         description: A unique integer value identifying this discount.
         required: true
       tags:
-      - api
+      - Discounts
       requestBody:
         content:
           application/json:
@@ -420,6 +445,7 @@ paths:
               $ref: '#/components/schemas/PatchedDiscount'
       security:
       - jwtCookieAuth: []
+      - jwtCookieAuth: []
       - {}
       responses:
         '200':
@@ -430,6 +456,7 @@ paths:
           description: ''
     delete:
       operationId: api_catalog_discounts_destroy
+      summary: Delete discount
       parameters:
       - in: path
         name: id
@@ -438,8 +465,9 @@ paths:
         description: A unique integer value identifying this discount.
         required: true
       tags:
-      - api
+      - Discounts
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       - {}
       responses:
@@ -448,9 +476,11 @@ paths:
   /api/catalog/product-discount-history/:
     get:
       operationId: api_catalog_product_discount_history_list
+      summary: List product discount history
       tags:
-      - api
+      - Product Discount History
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       - {}
       responses:
@@ -465,6 +495,7 @@ paths:
   /api/catalog/product-discount-history/{id}/:
     get:
       operationId: api_catalog_product_discount_history_retrieve
+      summary: Get product discount history
       parameters:
       - in: path
         name: id
@@ -473,8 +504,9 @@ paths:
         description: A unique integer value identifying this product discount history.
         required: true
       tags:
-      - api
+      - Product Discount History
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       - {}
       responses:
@@ -487,9 +519,46 @@ paths:
   /api/catalog/products/:
     get:
       operationId: api_catalog_products_list
+      summary: List products
+      parameters:
+      - in: query
+        name: brand
+        schema:
+          type: string
+      - in: query
+        name: category
+        schema:
+          type: string
+      - in: query
+        name: max_price
+        schema:
+          type: number
+      - in: query
+        name: min_price
+        schema:
+          type: number
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
       tags:
-      - api
+      - Products
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       - {}
       responses:
@@ -497,14 +566,13 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Product'
+                $ref: '#/components/schemas/PaginatedProductList'
           description: ''
     post:
       operationId: api_catalog_products_create
+      summary: Create product
       tags:
-      - api
+      - Products
       requestBody:
         content:
           application/json:
@@ -519,7 +587,7 @@ paths:
         required: true
       security:
       - jwtCookieAuth: []
-      - {}
+      - jwtCookieAuth: []
       responses:
         '201':
           content:
@@ -530,6 +598,7 @@ paths:
   /api/catalog/products/{id}/:
     get:
       operationId: api_catalog_products_retrieve
+      summary: Get product
       parameters:
       - in: path
         name: id
@@ -538,8 +607,9 @@ paths:
         description: A unique integer value identifying this product.
         required: true
       tags:
-      - api
+      - Products
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       - {}
       responses:
@@ -551,6 +621,7 @@ paths:
           description: ''
     put:
       operationId: api_catalog_products_update
+      summary: Update product
       parameters:
       - in: path
         name: id
@@ -559,7 +630,7 @@ paths:
         description: A unique integer value identifying this product.
         required: true
       tags:
-      - api
+      - Products
       requestBody:
         content:
           application/json:
@@ -574,7 +645,7 @@ paths:
         required: true
       security:
       - jwtCookieAuth: []
-      - {}
+      - jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -584,6 +655,7 @@ paths:
           description: ''
     patch:
       operationId: api_catalog_products_partial_update
+      summary: Partially update product
       parameters:
       - in: path
         name: id
@@ -592,7 +664,7 @@ paths:
         description: A unique integer value identifying this product.
         required: true
       tags:
-      - api
+      - Products
       requestBody:
         content:
           application/json:
@@ -606,7 +678,7 @@ paths:
               $ref: '#/components/schemas/PatchedProduct'
       security:
       - jwtCookieAuth: []
-      - {}
+      - jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -616,6 +688,7 @@ paths:
           description: ''
     delete:
       operationId: api_catalog_products_destroy
+      summary: Delete product
       parameters:
       - in: path
         name: id
@@ -624,19 +697,152 @@ paths:
         description: A unique integer value identifying this product.
         required: true
       tags:
-      - api
+      - Products
       security:
       - jwtCookieAuth: []
-      - {}
+      - jwtCookieAuth: []
       responses:
         '204':
           description: No response body
+  /api/catalog/reports/:
+    post:
+      operationId: api_catalog_reports_create
+      summary: Report a product or a discount
+      tags:
+      - Reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReportCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReportCreate'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportCreate'
+          description: ''
+  /api/catalog/reports/moderation/:
+    get:
+      operationId: api_catalog_reports_moderation_list
+      summary: List reported items (moderation)
+      tags:
+      - Reports
+      security:
+      - jwtCookieAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReportModeration'
+          description: ''
+  /api/catalog/reports/moderation/{id}/:
+    get:
+      operationId: api_catalog_reports_moderation_retrieve
+      summary: Retrieve a report (moderation)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Reports
+      security:
+      - jwtCookieAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportModeration'
+          description: ''
+    put:
+      operationId: api_catalog_reports_moderation_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReportModeration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ReportModeration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ReportModeration'
+      security:
+      - jwtCookieAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportModeration'
+          description: ''
+    patch:
+      operationId: api_catalog_reports_moderation_partial_update
+      summary: Update report status (moderation)
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Reports
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedReportModeration'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedReportModeration'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedReportModeration'
+      security:
+      - jwtCookieAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportModeration'
+          description: ''
   /api/catalog/stores/:
     get:
       operationId: api_catalog_stores_list
+      summary: List stores
       tags:
-      - api
+      - Stores
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       - {}
       responses:
@@ -650,8 +856,9 @@ paths:
           description: ''
     post:
       operationId: api_catalog_stores_create
+      summary: Create store
       tags:
-      - api
+      - Stores
       requestBody:
         content:
           application/json:
@@ -666,7 +873,7 @@ paths:
         required: true
       security:
       - jwtCookieAuth: []
-      - {}
+      - jwtCookieAuth: []
       responses:
         '201':
           content:
@@ -677,6 +884,7 @@ paths:
   /api/catalog/stores/{id}/:
     get:
       operationId: api_catalog_stores_retrieve
+      summary: Get store
       parameters:
       - in: path
         name: id
@@ -685,8 +893,9 @@ paths:
         description: A unique integer value identifying this store.
         required: true
       tags:
-      - api
+      - Stores
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       - {}
       responses:
@@ -698,6 +907,7 @@ paths:
           description: ''
     put:
       operationId: api_catalog_stores_update
+      summary: Update store
       parameters:
       - in: path
         name: id
@@ -706,7 +916,7 @@ paths:
         description: A unique integer value identifying this store.
         required: true
       tags:
-      - api
+      - Stores
       requestBody:
         content:
           application/json:
@@ -721,7 +931,7 @@ paths:
         required: true
       security:
       - jwtCookieAuth: []
-      - {}
+      - jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -731,6 +941,7 @@ paths:
           description: ''
     patch:
       operationId: api_catalog_stores_partial_update
+      summary: Partially update store
       parameters:
       - in: path
         name: id
@@ -739,7 +950,7 @@ paths:
         description: A unique integer value identifying this store.
         required: true
       tags:
-      - api
+      - Stores
       requestBody:
         content:
           application/json:
@@ -753,7 +964,7 @@ paths:
               $ref: '#/components/schemas/PatchedStore'
       security:
       - jwtCookieAuth: []
-      - {}
+      - jwtCookieAuth: []
       responses:
         '200':
           content:
@@ -763,6 +974,7 @@ paths:
           description: ''
     delete:
       operationId: api_catalog_stores_destroy
+      summary: Delete store
       parameters:
       - in: path
         name: id
@@ -771,22 +983,23 @@ paths:
         description: A unique integer value identifying this store.
         required: true
       tags:
-      - api
+      - Stores
       security:
       - jwtCookieAuth: []
-      - {}
+      - jwtCookieAuth: []
       responses:
         '204':
           description: No response body
   /api/catalog/user/discounts/:
     get:
       operationId: api_catalog_user_discounts_list
-      description: |-
-        - POST: Allows authenticated users to submit a new discount for a product or category.
-        - GET: Allows authenticated users to see a history of their submitted discounts.
+      description: Returns discounts submitted by the current user in reverse chronological
+        order.
+      summary: List submitted discounts
       tags:
-      - api
+      - User Discounts
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       responses:
         '200':
@@ -799,11 +1012,12 @@ paths:
           description: ''
     post:
       operationId: api_catalog_user_discounts_create
-      description: |-
-        - POST: Allows authenticated users to submit a new discount for a product or category.
-        - GET: Allows authenticated users to see a history of their submitted discounts.
+      description: Submit a discount targeting a product or category. Exactly one
+        of product_id, category_id, or new_product must be provided. When providing
+        new_product, its brand must match the store's brand.
+      summary: Submit a new discount
       tags:
-      - api
+      - User Discounts
       requestBody:
         content:
           application/json:
@@ -818,19 +1032,85 @@ paths:
         required: true
       security:
       - jwtCookieAuth: []
+      - jwtCookieAuth: []
       responses:
         '201':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserDiscountCreate'
+                $ref: '#/components/schemas/UserDiscountList'
           description: ''
+  /api/catalog/user/wishlist/:
+    get:
+      operationId: api_catalog_user_wishlist_list
+      summary: List wishlist items
+      tags:
+      - Wishlist
+      security:
+      - jwtCookieAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WishlistItem'
+          description: ''
+    post:
+      operationId: api_catalog_user_wishlist_create
+      summary: Add product to wishlist
+      tags:
+      - Wishlist
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WishlistItem'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/WishlistItem'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/WishlistItem'
+        required: true
+      security:
+      - jwtCookieAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WishlistItem'
+          description: ''
+  /api/catalog/user/wishlist/{product_id}/:
+    delete:
+      operationId: api_catalog_user_wishlist_destroy
+      summary: Remove product from wishlist
+      parameters:
+      - in: path
+        name: product_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - Wishlist
+      security:
+      - jwtCookieAuth: []
+      - jwtCookieAuth: []
+      responses:
+        '204':
+          description: No response body
   /api/change-password:
     post:
       operationId: api_change_password_create
-      summary: Change user password
+      description: Changes the current user's password after verifying the current
+        password.
+      summary: Change password
       tags:
-      - api
+      - Users
       requestBody:
         content:
           application/json:
@@ -844,6 +1124,7 @@ paths:
               $ref: '#/components/schemas/ChangePassword'
         required: true
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       responses:
         '200':
@@ -851,26 +1132,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Message'
-          description: ''
+          description: Password changed
         '400':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          description: ''
+          description: Validation error
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          description: ''
+          description: Unauthenticated
   /api/list:
     get:
-      operationId: api_list_list
-      summary: List all users
+      operationId: api_list_retrieve
+      description: Admin-only view to list all users.
+      summary: List users
       tags:
-      - api
+      - Users
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       responses:
         '200':
@@ -880,19 +1163,21 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/SimpleUser'
-          description: ''
+          description: List of users
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          description: ''
+          description: Unauthenticated/unauthorized
   /api/login:
     post:
       operationId: api_login_create
-      summary: Login a user
+      description: Authenticate a user with email & password. JWT and refresh token
+        are also set as HttpOnly cookies.
+      summary: Login
       tags:
-      - api
+      - Auth
       requestBody:
         content:
           application/json:
@@ -906,6 +1191,7 @@ paths:
               $ref: '#/components/schemas/Login'
         required: true
       security:
+      - jwtCookieAuth: []
       - {}
       responses:
         '200':
@@ -913,32 +1199,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Token'
-          description: ''
+          description: Tokens returned and set as cookies
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          description: ''
+          description: Invalid credentials
   /api/logout:
     post:
       operationId: api_logout_create
-      summary: Logout user
+      description: Clears JWT and refresh cookies. No request body required.
+      summary: Logout
       tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Message'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Message'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Message'
-        required: true
+      - Auth
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       - {}
       responses:
@@ -947,25 +1223,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Message'
-          description: ''
+          description: Logged out
   /api/refresh:
     post:
       operationId: api_refresh_create
+      description: Exchanges a valid refresh cookie for a new access & refresh token
+        pair. No request body required.
       summary: Refresh access token
       tags:
-      - api
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Token'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Token'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/Token'
+      - Auth
       security:
+      - jwtCookieAuth: []
       - {}
       responses:
         '200':
@@ -973,19 +1241,20 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Token'
-          description: ''
+          description: New tokens issued and set as cookies
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          description: ''
+          description: Missing/expired/invalid refresh token
   /api/register:
     post:
       operationId: api_register_create
+      description: Create an account. Returns the created user without the password.
       summary: Register a new user
       tags:
-      - api
+      - Auth
       requestBody:
         content:
           application/json:
@@ -999,27 +1268,30 @@ paths:
               $ref: '#/components/schemas/User'
         required: true
       security:
+      - jwtCookieAuth: []
       - {}
       responses:
-        '200':
+        '201':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-          description: ''
+          description: Created user
         '400':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          description: ''
+          description: Validation error
   /api/user:
     get:
       operationId: api_user_retrieve
+      description: Returns the currently authenticated user's profile.
       summary: Get current user
       tags:
-      - api
+      - Users
       security:
+      - jwtCookieAuth: []
       - jwtCookieAuth: []
       responses:
         '200':
@@ -1027,19 +1299,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-          description: ''
+          description: Authenticated user
         '401':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          description: ''
+          description: Unauthenticated
 components:
   schemas:
+    BlankEnum:
+      enum:
+      - ''
     Brand:
       type: object
       properties:
         id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        stores_count:
+          type: integer
+          readOnly: true
+        products_count:
+          type: integer
+          readOnly: true
+        active_discounts_count:
           type: integer
           readOnly: true
         created_at:
@@ -1050,15 +1337,13 @@ components:
           type: string
           format: date-time
           readOnly: true
-        name:
-          type: string
-          maxLength: 255
-        description:
-          type: string
       required:
+      - active_discounts_count
       - created_at
       - id
       - name
+      - products_count
+      - stores_count
       - updated_at
     Category:
       type: object
@@ -1102,6 +1387,9 @@ components:
         id:
           type: integer
           readOnly: true
+        effective_status:
+          type: string
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -1130,7 +1418,7 @@ components:
           type: string
           format: date-time
         status:
-          $ref: '#/components/schemas/StatusEnum'
+          $ref: '#/components/schemas/DiscountStatusEnum'
         brand:
           type: integer
           nullable: true
@@ -1146,6 +1434,7 @@ components:
       required:
       - created_at
       - discount_type
+      - effective_status
       - ends_at
       - id
       - name
@@ -1153,6 +1442,16 @@ components:
       - target_type
       - updated_at
       - value
+    DiscountStatusEnum:
+      enum:
+      - in_review
+      - approved
+      - denied
+      type: string
+      description: |-
+        * `in_review` - In Review
+        * `approved` - Approved
+        * `denied` - Denied
     DiscountTypeEnum:
       enum:
       - percentage
@@ -1187,10 +1486,48 @@ components:
           type: string
       required:
       - message
+    NullEnum:
+      enum:
+      - null
+    PaginatedProductList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
     PatchedBrand:
       type: object
       properties:
         id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        stores_count:
+          type: integer
+          readOnly: true
+        products_count:
+          type: integer
+          readOnly: true
+        active_discounts_count:
           type: integer
           readOnly: true
         created_at:
@@ -1201,11 +1538,6 @@ components:
           type: string
           format: date-time
           readOnly: true
-        name:
-          type: string
-          maxLength: 255
-        description:
-          type: string
     PatchedCategory:
       type: object
       properties:
@@ -1230,6 +1562,9 @@ components:
       properties:
         id:
           type: integer
+          readOnly: true
+        effective_status:
+          type: string
           readOnly: true
         created_at:
           type: string
@@ -1259,7 +1594,7 @@ components:
           type: string
           format: date-time
         status:
-          $ref: '#/components/schemas/StatusEnum'
+          $ref: '#/components/schemas/DiscountStatusEnum'
         brand:
           type: integer
           nullable: true
@@ -1291,27 +1626,80 @@ components:
           type: string
           format: date-time
           readOnly: true
+        external_id:
+          type: string
+          nullable: true
+          maxLength: 255
         name:
           type: string
           maxLength: 255
         description:
           type: string
+          nullable: true
+        photo_url:
+          type: string
+          format: uri
+          maxLength: 200
         price:
           type: string
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
         price_unit:
-          $ref: '#/components/schemas/PriceUnitEnum'
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/PriceUnitEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
         weight:
           type: string
           format: decimal
           pattern: ^-?\d{0,5}(?:\.\d{0,3})?$
+          nullable: true
         store:
           type: integer
+          nullable: true
+        brand_name:
+          type: string
+          readOnly: true
         brand:
           type: integer
+          nullable: true
         category:
           type: integer
+    PatchedReportModeration:
+      type: object
+      description: Serializer for moderators/admins to view and update report status.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          type: integer
+          readOnly: true
+          nullable: true
+        discount:
+          type: integer
+          readOnly: true
+          nullable: true
+        product_reason:
+          readOnly: true
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/ProductReasonEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        discount_image_base64:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/ReportStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
     PatchedStore:
       type: object
       properties:
@@ -1377,38 +1765,57 @@ components:
           type: string
           format: date-time
           readOnly: true
+        external_id:
+          type: string
+          nullable: true
+          maxLength: 255
         name:
           type: string
           maxLength: 255
         description:
           type: string
+          nullable: true
+        photo_url:
+          type: string
+          format: uri
+          maxLength: 200
         price:
           type: string
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
         price_unit:
-          $ref: '#/components/schemas/PriceUnitEnum'
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/PriceUnitEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
         weight:
           type: string
           format: decimal
           pattern: ^-?\d{0,5}(?:\.\d{0,3})?$
+          nullable: true
         store:
           type: integer
+          nullable: true
+        brand_name:
+          type: string
+          readOnly: true
         brand:
           type: integer
+          nullable: true
         category:
           type: integer
       required:
       - brand
+      - brand_name
       - category
       - created_at
       - discounts
+      - external_id
       - id
       - name
-      - price
-      - store
       - updated_at
-      - weight
     ProductDiscountHistory:
       type: object
       properties:
@@ -1438,18 +1845,119 @@ components:
       - discount
       - id
       - product
+    ProductReasonEnum:
+      enum:
+      - name
+      - photo
+      - price
+      type: string
+      description: |-
+        * `name` - Name
+        * `photo` - Photo
+        * `price` - Price
+    ReportCreate:
+      type: object
+      description: |-
+        Serializer for users to report a product or a discount.
+        Rules enforced:
+        - Exactly one of product or discount is provided
+        - If product is provided, product_reason must be one of: name/photo/price
+        - If discount is provided, discount_image_base64 is required
+        - Description is required
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          type: integer
+          nullable: true
+        discount:
+          type: integer
+          nullable: true
+        product_reason:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/ProductReasonEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        discount_image_base64:
+          type: string
+        description:
+          type: string
+        status:
+          allOf:
+          - $ref: '#/components/schemas/ReportStatusEnum'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - description
+      - id
+      - status
+    ReportModeration:
+      type: object
+      description: Serializer for moderators/admins to view and update report status.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          type: integer
+          readOnly: true
+          nullable: true
+        discount:
+          type: integer
+          readOnly: true
+          nullable: true
+        product_reason:
+          readOnly: true
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/ProductReasonEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        discount_image_base64:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/ReportStatusEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - description
+      - discount
+      - discount_image_base64
+      - id
+      - product
+      - product_reason
+    ReportStatusEnum:
+      enum:
+      - REPORTED
+      - ACCEPTED
+      - DENIED
+      type: string
+      description: |-
+        * `REPORTED` - Reported
+        * `ACCEPTED` - Accepted
+        * `DENIED` - Denied
     RoleEnum:
       enum:
       - user
-      - admin
       - moderator
-      - guest
+      - admin
       type: string
       description: |-
         * `user` - User
-        * `admin` - Admin
         * `moderator` - Moderator
-        * `guest` - Guest
+        * `admin` - Admin
     SimpleUser:
       type: object
       properties:
@@ -1462,16 +1970,6 @@ components:
       required:
       - id
       - name
-    StatusEnum:
-      enum:
-      - in_review
-      - approved
-      - denied
-      type: string
-      description: |-
-        * `in_review` - In Review
-        * `approved` - Approved
-        * `denied` - Denied
     Store:
       type: object
       properties:
@@ -1653,20 +2151,69 @@ components:
           type: string
           format: decimal
           pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          nullable: true
         price_unit:
-          $ref: '#/components/schemas/PriceUnitEnum'
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/PriceUnitEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
         weight:
           type: string
           format: decimal
           pattern: ^-?\d{0,5}(?:\.\d{0,3})?$
+          nullable: true
         description:
           type: string
+          nullable: true
       required:
       - brand
       - category
       - name
+    WishlistItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        product:
+          type: integer
+        product_name:
+          type: string
+          nullable: true
+          readOnly: true
+        product_photo_url:
+          type: string
+          nullable: true
+          readOnly: true
+        price:
+          type: number
+          format: double
+          nullable: true
+          readOnly: true
+        discounted_price:
+          type: number
+          format: double
+          nullable: true
+          description: |-
+            Return the best (lowest) discounted price if a discount is active; otherwise None.
+            Active means: current time between starts_at and ends_at. We do not hard-require
+            an APPROVED status here because upstream data may not consistently set it; the
+            time window is the source of truth for activity.
+            We first check direct discount rules on the product, then fall back to discount history.
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - discounted_price
+      - id
       - price
-      - weight
+      - product
+      - product_name
+      - product_photo_url
   securitySchemes:
     jwtCookieAuth:
       type: apiKey

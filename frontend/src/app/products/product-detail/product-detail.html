@@ -43,7 +43,11 @@
                 <button class="wishlist-btn" [class.wishlisted]="isWishlisted" (click)="toggleWishlist()" aria-label="Wishlist toggle">
                     <i [ngClass]="isWishlisted ? 'fas fa-heart-broken' : 'far fa-heart'"></i>
                     <span>{{ isWishlisted ? 'Remove from wishlist' : 'Add to wishlist' }}</span>
-                </button>
+                </button> @if (isUserRole) {
+                <button class="report-btn" (click)="openReportModal()" [disabled]="hasReported" aria-label="Report product">
+                    <i class="fas fa-flag"></i>
+                    <span>{{ hasReported ? 'Reported' : 'Report a problem' }}</span>
+                </button> }
             </div>
         </div>
     </div>
@@ -84,6 +88,35 @@
             </ul>
         </div>
     </div>
+    } @if (isReportModalOpen) {
+    <div class="modal-backdrop" (click)="closeReportModal()">
+        <div class="modal-content" (click)="$event.stopPropagation()">
+            <button class="modal-close-btn" (click)="closeReportModal()">&times;</button>
+            <h2>Report a problem</h2>
+            <div class="report-form">
+                <label for="reason"><strong>Reason</strong></label>
+                <div class="select-wrapper">
+                    <select id="reason" class="report-select" [(ngModel)]="reportReason">
+                        <option value="" disabled>Select reason</option>
+                        <option value="name">Incorrect name</option>
+                        <option value="photo">Incorrect photo</option>
+                        <option value="price">Incorrect price</option>
+                    </select>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+
+                <label for="description"><strong>Description</strong></label>
+                <textarea id="description" rows="4" [(ngModel)]="reportDescription" placeholder="Describe the issue..."></textarea>
+
+                <div class="actions">
+                    <button class="wishlist-btn" (click)="submitReport()">
+                        <i class="fas fa-paper-plane"></i>
+                        <span>Submit report</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
     } @if (relatedProducts.length > 0) {
     <div class="related-products">
         <h2>Related Products</h2>
@@ -92,7 +125,12 @@
             <div class="product-item" (click)="navigateToProduct(relatedProduct.id)">
                 <img [src]="relatedProduct.photo_url" [alt]="relatedProduct.name">
                 <h3>{{ relatedProduct.name }}</h3>
+                @if (relatedProduct.discounts && relatedProduct.discounts.length > 0 && relatedProduct.discounts[0].effective_status === 'IN_ACTION') {
+                <p class="discount-price">{{ (relatedProduct.price - relatedProduct.discounts[0].value).toFixed(2) | currency:'EUR' }}</p>
+                <p class="original-price"><s>{{ relatedProduct.price | currency:'EUR' }}</s></p>
+                } @else {
                 <p>{{ relatedProduct.price | currency:'EUR' }}</p>
+                }
             </div>
             }
         </div>

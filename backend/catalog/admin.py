@@ -7,6 +7,7 @@ from .models import (
     Product,
     ProductDiscountHistory,
     WishlistItem,
+    Report,
 )
 
 
@@ -71,3 +72,19 @@ class WishlistItemAdmin(admin.ModelAdmin):
     list_display = ("user", "product", "created_at")
     search_fields = ("user__email", "product__name")
     autocomplete_fields = ("user", "product")
+
+
+@admin.register(Report)
+class ReportAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "product",
+        "discount",
+        "product_reason",
+        "status",
+        "reported_by",
+        "created_at",
+    )
+    list_filter = ("status", "product_reason")
+    search_fields = ("description", "product__name")
+    autocomplete_fields = ("product", "discount", "reported_by")

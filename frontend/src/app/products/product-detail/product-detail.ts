@@ -8,12 +8,15 @@ import { ProductService } from '../../services/product.service';
 import { BrandService } from '../../services/brand.service';
 import { DiscountService } from '../../services/discount.service';
 import { CurrencyPipe, DatePipe, CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { WishlistService, WishlistItemDTO } from '../../services/wishlist.service';
+import { ReportService } from '../../services/report.service';
+import { Auth } from '../../auth';
 
 @Component({
   selector: 'app-product-detail',
   standalone: true,
-  imports: [CurrencyPipe, DatePipe, CommonModule],
+  imports: [CurrencyPipe, DatePipe, CommonModule, FormsModule],
   templateUrl: './product-detail.html',
   styleUrls: ['./product-detail.css']
 })
@@ -23,9 +26,13 @@ export class ProductDetailComponent implements OnInit {
   discountHistory: ProductDiscountHistory[] = [];
   relatedProducts: Product[] = [];
   isModalOpen = false;
+  isReportModalOpen = false;
+  reportReason: 'name' | 'photo' | 'price' | '' = '';
+  reportDescription = '';
   isLoading = true;
   error: string | null = null;
   isWishlisted = false;
+  hasReported = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -33,6 +40,8 @@ export class ProductDetailComponent implements OnInit {
     private brandService: BrandService,
     private discountService: DiscountService,
     private wishlistService: WishlistService,
+    private reportService: ReportService,
+    private auth: Auth,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
@@ -47,6 +56,7 @@ export class ProductDetailComponent implements OnInit {
           this.relatedProducts = [];
           this.isLoading = true;
           this.error = null;
+          this.hasReported = false;
           
           return this.productService.getProductById(+productId).pipe(
             switchMap((product: Product) => {
@@ -147,5 +157,43 @@ export class ProductDetailComponent implements OnInit {
         error: (e) => console.error('Failed to add to wishlist', e)
       });
     }
+  }
+
+  get isUserRole(): boolean {
+    return this.auth.getRole() === 'user';
+  }
+
+  openReportModal(): void {
+    if (!this.isUserRole) return;
+    this.reportReason = '';
+    this.reportDescription = '';
+    this.isReportModalOpen = true;
+  }
+
+  closeReportModal(): void {
+    this.isReportModalOpen = false;
+  }
+
+  submitReport(): void {
+    if (!this.product) return;
+    if (!this.reportReason || !this.reportDescription.trim()) {
+      return;
+    }
+    this.reportService.createReport({
+      product: this.product.id,
+      product_reason: this.reportReason,
+      description: this.reportDescription.trim()
+    }).subscribe({
+      next: () => {
+        this.isReportModalOpen = false;
+        this.hasReported = true;
+        this.cdr.detectChanges();
+      },
+      error: (e) => {
+        console.error('Failed to submit report', e);
+        this.isReportModalOpen = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 }

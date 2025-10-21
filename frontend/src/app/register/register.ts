@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Auth } from '../auth';
 
 @Component({
@@ -13,7 +14,7 @@ export class Register {
   email = '';
   password = '';
 
-  constructor(private authService: Auth) {}
+  constructor(private authService: Auth, private router: Router) {}
 
   onSubmit() {
     this.authService.register({
@@ -23,6 +24,8 @@ export class Register {
     }).subscribe({
       next: response => {
         console.log('Registration successful', response);
+        this.router.navigate(['/login']);
+
         // Handle successful registration, e.g., redirect to login
       },
       error: error => {

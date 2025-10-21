@@ -42,6 +42,28 @@
     /* Keeps title on the left */
 }
 
+.product-content {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+}
+
+.product-image {
+    flex: 1 0 33%;
+    max-width: 33%;
+}
+
+.product-image img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    border-radius: 10px;
+}
+
+.product-info {
+    flex: 2;
+}
+
 .product-info .price {
     font-size: 2.5rem;
     /* Made price bigger */
@@ -125,6 +147,32 @@
     color: #ff6b6b;
 }
 
+.report-btn {
+    margin-top: 0.75rem;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 0.5rem;
+}
+
+.report-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.report-btn i {
+    color: #ffd166;
+    /* a distinct icon color for flag */
+}
+
 
 /* Modal Styles */
 
@@ -179,9 +227,79 @@
     border-radius: 5px;
 }
 
-.product-content {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
+.report-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.report-form select,
+.report-form textarea {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 8px 10px;
+    outline: none;
+}
+
+
+/* Custom select styling */
+
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper .fa-chevron-down {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.8);
+    pointer-events: none;
+}
+
+.report-select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 100%;
+    padding-right: 36px;
+    /* leave room for icon */
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.report-select:focus,
+.report-form textarea:focus {
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+.report-select:hover,
+.report-form textarea:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.report-form textarea::placeholder {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.report-form .actions {
+    .report-select {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        width: 100%;
+        padding: 0.5rem;
+        /* match /products */
+        padding-right: 2.25rem;
+        /* room for chevron */
+        border-radius: 6px;
+        /* match /products */
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+    }
     gap: 2rem;
 }
 
