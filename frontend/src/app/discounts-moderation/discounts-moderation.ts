@@ -10,7 +10,7 @@ interface DiscountModerationDTO {
   id: number;
   name: string;
   description: string;
-  discount_type: 'percentage' | 'fixed';
+discount_type: 'percentage' | 'fixed';
   value: string;
   target_type: 'product' | 'category' | 'brand' | 'store';
   brand?: number | null;
