@@ -43,6 +43,11 @@
                 <button class="wishlist-btn" [class.wishlisted]="isWishlisted" (click)="toggleWishlist()" aria-label="Wishlist toggle">
                     <i [ngClass]="isWishlisted ? 'fas fa-heart-broken' : 'far fa-heart'"></i>
                     <span>{{ isWishlisted ? 'Remove from wishlist' : 'Add to wishlist' }}</span>
+                </button>
+
+                <button class="report-btn" (click)="addToCart()" aria-label="Add to cart">
+                    <i class="fas fa-cart-plus"></i>
+                    <span>Add to cart</span>
                 </button> @if (isUserRole) {
                 <button class="report-btn" (click)="openReportModal()" [disabled]="hasReported" aria-label="Report product">
                     <i class="fas fa-flag"></i>

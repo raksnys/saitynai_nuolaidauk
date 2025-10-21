@@ -1,0 +1,103 @@
+<div class="cart-container">
+    @if (isLoading) {
+    <div class="loading">Loading cart...</div>
+    } @else if (error) {
+    <div class="error">{{ error }}</div>
+    } @else {
+    <div class="cart-content glass-card">
+        @if (!openCart) {
+        <h2>Create a new cart</h2>
+        <div class="create-form">
+            <label>Optional name</label>
+            <input type="text" [(ngModel)]="newCartName" placeholder="e.g. Weekly groceries" />
+            <button (click)="createCart()">Create cart</button>
+        </div>
+        } @else {
+        <div class="cart-header">
+            <div>
+                <h2>Shopping Cart</h2>
+                @if (openCart.name) {
+                <p class="muted">{{ openCart.name }}</p> }
+            </div>
+            <div class="cart-actions">
+                <button class="danger" (click)="closeCart()">Close cart</button>
+            </div>
+        </div>
+
+        @if (openCart.items.length === 0) {
+        <p class="muted">Your cart is empty. Go to <a routerLink="/products">Products</a> to add items.</p>
+        } @else {
+        <div class="items">
+            @for (group of groupedOpenItems; track group.brand) {
+            <div class="brand-group">
+                <h3 class="brand-heading">{{ group.brand_name || 'Other' }}</h3>
+                @for (item of group.items; track item.id) {
+                <div class="item glass-subcard">
+                    <div class="main">
+                        <div class="name">{{ item.name }}</div>
+                        <div class="price">
+                            @if (item.current_discount) {
+                            <div class="price-line">
+                                <span class="price-discounted">{{ getItemDiscountedPrice(item) | currency:'EUR' }}</span>
+                                <span class="price-original"><s>{{ item.price | currency:'EUR' }}</s></span>
+                            </div>
+                            } @else {
+                            <div class="price-line">
+                                <span>{{ item.price | currency:'EUR' }}</span>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                    <div class="controls">
+                        <div class="qty">
+                            <button (click)="dec(item)">-</button>
+                            <span>{{ item.quantity }}</span>
+                            <button (click)="inc(item)">+</button>
+                        </div>
+                        <label class="purchased">
+                    <input type="checkbox" [checked]="item.is_purchased" (change)="togglePurchased(item)" />
+                    Purchased
+                  </label>
+                        <button class="remove" (click)="remove(item)">Remove</button>
+                    </div>
+                </div>
+                }
+            </div>
+            }
+        </div>
+        } }
+    </div>
+
+    <div class="history glass-card">
+        <h3>Closed carts</h3>
+        @if (history.length === 0) {
+        <p class="muted">No closed carts yet.</p>
+        } @else {
+        <div class="history-list">
+            @for (c of history; track c.id) {
+            <details class="history-item glass-subcard">
+                <summary>
+                    <span class="muted">#{{ c.id }} • {{ c.updated_at | date:'medium' }}</span> @if (c.name) { <span class="muted">• {{ c.name }}</span> }
+                </summary>
+                <div class="history-groups">
+                    @for (g of groupCartItems(c); track g.brand) {
+                    <div class="history-brand">
+                        <h4>{{ g.brand_name || 'Other' }}</h4>
+                        <ul>
+                            @for (it of g.items; track it.id) {
+                            <li>
+                                <span>{{ it.name }}</span>
+                                <span class="muted">x{{ it.quantity }}</span> @if (it.is_purchased) { <span class="tag">purchased</span> }
+                            </li>
+                            }
+                        </ul>
+                    </div>
+                    }
+                </div>
+            </details>
+            }
+        </div>
+        }
+    </div>
+    }
+</div>

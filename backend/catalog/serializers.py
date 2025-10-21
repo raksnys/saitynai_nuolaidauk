@@ -1,5 +1,16 @@
 from rest_framework import serializers
-from .models import Product, Category, Discount, Store, Brand, ProductDiscountHistory, WishlistItem, Report
+from .models import (
+    Product,
+    Category,
+    Discount,
+    Store,
+    Brand,
+    ProductDiscountHistory,
+    WishlistItem,
+    Report,
+    ShoppingCart,
+    ShoppingCartItem,
+)
 from django.utils import timezone
 from decimal import Decimal
 from typing import Optional
@@ -43,9 +54,11 @@ class UserProductCreateSerializer(serializers.ModelSerializer):
 class UserDiscountCreateSerializer(serializers.ModelSerializer):
     """Serializer for users to submit a new discount for moderation."""
     store_id = serializers.IntegerField(write_only=True)
+    brand_id = serializers.IntegerField(write_only=True, required=False)
     category_id = serializers.IntegerField(write_only=True, required=False)
     product_id = serializers.IntegerField(write_only=True, required=False)
     new_product = UserProductCreateSerializer(required=False, write_only=True)
+    all_products = serializers.BooleanField(write_only=True, required=False, default=False)
 
     class Meta:
         model = Discount
@@ -58,9 +71,11 @@ class UserDiscountCreateSerializer(serializers.ModelSerializer):
             "starts_at",
             "ends_at",
             "store_id",
+            "brand_id",
             "category_id",
             "product_id",
             "new_product",
+            "all_products",
         ]
         read_only_fields = ("id",)  # Mark id as read-only
         extra_kwargs = {
@@ -74,10 +89,13 @@ class UserDiscountCreateSerializer(serializers.ModelSerializer):
         has_product_id = "product_id" in data
         has_category_id = "category_id" in data
         has_new_product = "new_product" in data
+        all_products = data.get("all_products", False)
 
-        if not (has_product_id ^ has_category_id ^ has_new_product):
+        # exactly one of the four options
+        options = [bool(has_product_id), bool(has_category_id), bool(has_new_product), bool(all_products)]
+        if sum(1 for x in options if x) != 1:
             raise serializers.ValidationError(
-                "You must specify exactly one of: 'product_id', 'category_id', or 'new_product'."
+                "You must specify exactly one of: 'all_products', 'product_id', 'category_id', or 'new_product'."
             )
 
         if has_new_product:
@@ -97,12 +115,18 @@ class UserDiscountCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request_user = self.context["request"].user
         store = Store.objects.get(id=validated_data["store_id"])
+        brand_id = validated_data.get("brand_id")
+        if brand_id is not None and store.brand_id != int(brand_id):
+            raise serializers.ValidationError({"brand_id": "Selected store does not belong to the specified brand."})
 
         target_type = None
         product_target = None
         category_target = None
 
-        if "new_product" in validated_data:
+        if validated_data.get("all_products", False):
+            target_type = Discount.TARGET_STORE
+            # No category/product
+        elif "new_product" in validated_data:
             target_type = Discount.TARGET_PRODUCT
             product_data = validated_data.pop("new_product")
             
@@ -123,6 +147,9 @@ class UserDiscountCreateSerializer(serializers.ModelSerializer):
         elif "product_id" in validated_data:
             target_type = Discount.TARGET_PRODUCT
             product_target = Product.objects.get(id=validated_data["product_id"])
+            # Ensure product belongs to the selected store
+            if product_target.store_id != store.id:
+                raise serializers.ValidationError({"product_id": "Product does not belong to the selected store."})
         elif "category_id" in validated_data:
             target_type = Discount.TARGET_CATEGORY
             category_target = Category.objects.get(id=validated_data["category_id"])
@@ -131,13 +158,24 @@ class UserDiscountCreateSerializer(serializers.ModelSerializer):
         validated_data.pop("store_id", None)
         validated_data.pop("category_id", None)
         validated_data.pop("product_id", None)
+        all_products = validated_data.pop("all_products", False)
+        brand_id = validated_data.pop("brand_id", None)
 
-        discount = Discount.objects.create(
-            target_type=target_type,
-            product=product_target,
-            category=category_target,
-            **validated_data
-        )
+        # Build discount fields
+        kwargs = {**validated_data, "target_type": target_type}
+        if target_type == Discount.TARGET_PRODUCT:
+            kwargs["product"] = product_target
+        if target_type == Discount.TARGET_CATEGORY:
+            kwargs["category"] = category_target
+            # Scope category discount to a store
+            kwargs["store"] = store
+        if target_type == Discount.TARGET_STORE:
+            kwargs["store"] = store
+        # If brand_id given, set it (useful for store/category consistency checks)
+        if brand_id:
+            kwargs["brand_id"] = brand_id
+
+        discount = Discount.objects.create(**kwargs)
         return discount
 
 
@@ -313,6 +351,130 @@ class WishlistItemSerializer(serializers.ModelSerializer):
         return best
 
 
+class ShoppingCartItemSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+    price = serializers.SerializerMethodField()
+    current_discount = serializers.SerializerMethodField()
+    brand = serializers.SerializerMethodField()
+    brand_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ShoppingCartItem
+        fields = (
+            "id",
+            "product",
+            "name",
+            "price",
+            "current_discount",
+            "quantity",
+            "is_purchased",
+            "brand",
+            "brand_name",
+        )
+        read_only_fields = ("id",)
+
+    def get_name(self, obj: ShoppingCartItem):
+        return getattr(obj.product, "name", None)
+
+    def get_price(self, obj: ShoppingCartItem):
+        return getattr(obj.product, "price", None)
+
+    def _best_current_discount(self, product: Product) -> Optional[Discount]:
+        """Return the most beneficial currently active discount for a product among
+        product -> category -> brand level. Status must be APPROVED and now between
+        starts/ends. Chooses the one producing the lowest price.
+        """
+        if not product:
+            return None
+        now = timezone.now()
+        base_price: Optional[Decimal] = product.price
+        if base_price is None:
+            return None
+
+        candidates = list(Discount.objects.filter(
+            product=product,
+            status=Discount.DiscountStatus.APPROVED,
+            starts_at__lte=now,
+            ends_at__gte=now,
+        ))
+
+        # Category-level
+        candidates += list(Discount.objects.filter(
+            category=product.category,
+            status=Discount.DiscountStatus.APPROVED,
+            starts_at__lte=now,
+            ends_at__gte=now,
+        ))
+
+        # Brand-level
+        if product.brand:
+            candidates += list(Discount.objects.filter(
+                brand=product.brand,
+                status=Discount.DiscountStatus.APPROVED,
+                starts_at__lte=now,
+                ends_at__gte=now,
+            ))
+
+        def discounted_price(d: Discount) -> Decimal:
+            if d.discount_type == Discount.PERCENTAGE:
+                price = base_price * (Decimal('1') - (Decimal(d.value) / Decimal('100')))
+            else:
+                price = base_price - Decimal(d.value)
+            return max(price, Decimal('0')).quantize(Decimal('0.01'))
+
+        best: Optional[Discount] = None
+        best_price: Optional[Decimal] = None
+        for d in candidates:
+            dp = discounted_price(d)
+            if best is None or dp < best_price:
+                best, best_price = d, dp
+        return best
+
+    def get_current_discount(self, obj: ShoppingCartItem):
+        d = self._best_current_discount(obj.product)
+        if not d:
+            return None
+        return {
+            "id": d.id,
+            "name": d.name,
+            "discount_type": d.discount_type,
+            "value": str(d.value),
+            "starts_at": d.starts_at,
+            "ends_at": d.ends_at,
+        }
+
+    def get_brand(self, obj: ShoppingCartItem):
+        return getattr(getattr(obj.product, "brand", None), "id", None)
+
+    def get_brand_name(self, obj: ShoppingCartItem):
+        return getattr(getattr(obj.product, "brand", None), "name", None)
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+    items = ShoppingCartItemSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ShoppingCart
+        fields = (
+            "id",
+            "name",
+            "status",
+            "created_at",
+            "updated_at",
+            "items",
+        )
+        read_only_fields = ("id", "created_at", "updated_at", "status")
+
+    def validate(self, attrs):
+        # Only one OPEN cart per user globally
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if user and user.is_authenticated:
+            if ShoppingCart.objects.filter(user=user, status=ShoppingCart.Status.OPEN).exists():
+                raise serializers.ValidationError("You already have an open cart. Close it before creating a new one.")
+        return attrs
+
+
 class ReportCreateSerializer(serializers.ModelSerializer):
     """Serializer for users to report a product or a discount.
     Rules enforced:
@@ -373,3 +535,43 @@ class ReportModerationSerializer(serializers.ModelSerializer):
             "created_at",
         ]
         read_only_fields = ("id", "product", "discount", "product_reason", "discount_image_base64", "description", "created_at")
+
+
+class DiscountModerationSerializer(serializers.ModelSerializer):
+    """Serializer for moderators/admins to view and update discount status."""
+
+    class Meta:
+        model = Discount
+        fields = [
+            "id",
+            "name",
+            "description",
+            "discount_type",
+            "value",
+            "target_type",
+            "brand",
+            "store",
+            "category",
+            "product",
+            "starts_at",
+            "ends_at",
+            "status",
+            "submitted_by",
+            "created_at",
+        ]
+        read_only_fields = (
+            "id",
+            "name",
+            "description",
+            "discount_type",
+            "value",
+            "target_type",
+            "brand",
+            "store",
+            "category",
+            "product",
+            "starts_at",
+            "ends_at",
+            "submitted_by",
+            "created_at",
+        )

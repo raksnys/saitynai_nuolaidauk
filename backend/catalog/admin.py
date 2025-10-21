@@ -8,6 +8,8 @@ from .models import (
     ProductDiscountHistory,
     WishlistItem,
     Report,
+    ShoppingCart,
+    ShoppingCartItem,
 )
 
 
@@ -88,3 +90,18 @@ class ReportAdmin(admin.ModelAdmin):
     list_filter = ("status", "product_reason")
     search_fields = ("description", "product__name")
     autocomplete_fields = ("product", "discount", "reported_by")
+
+
+@admin.register(ShoppingCart)
+class ShoppingCartAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "name", "status", "updated_at")
+    list_filter = ("status",)
+    search_fields = ("user__email", "name")
+    autocomplete_fields = ("user",)
+
+
+@admin.register(ShoppingCartItem)
+class ShoppingCartItemAdmin(admin.ModelAdmin):
+    list_display = ("shopping_cart", "product", "quantity", "is_purchased")
+    list_filter = ("is_purchased",)
+    autocomplete_fields = ("shopping_cart", "product")

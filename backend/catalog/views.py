@@ -6,13 +6,25 @@ from django_filters.rest_framework import DjangoFilterBackend
 from fuzzywuzzy import process
 from rest_framework.decorators import action
 
-from .models import Brand, Category, Discount, Product, ProductDiscountHistory, Store, WishlistItem, Report
+from .models import (
+    Brand,
+    Category,
+    Discount,
+    Product,
+    ProductDiscountHistory,
+    Store,
+    WishlistItem,
+    Report,
+    ShoppingCart,
+    ShoppingCartItem,
+)
 from .pagination import StandardResultsSetPagination
 from .filters import ProductFilter
 from .serializers import (
     BrandSerializer,
     CategorySerializer,
     DiscountSerializer,
+    DiscountModerationSerializer,
     ProductDiscountHistorySerializer,
     ProductSerializer,
     StoreSerializer,
@@ -21,6 +33,8 @@ from .serializers import (
     WishlistItemSerializer,
     ReportCreateSerializer,
     ReportModerationSerializer,
+    ShoppingCartSerializer,
+    ShoppingCartItemSerializer,
 )
 from users.helpers.permissions import IsModeratorOrAdmin
 
@@ -246,6 +260,31 @@ class ReportModerationDetailView(generics.RetrieveUpdateAPIView):
 
 
 @extend_schema_view(
+    get=extend_schema(tags=["Discounts Moderation"], summary="List submitted discounts (moderation)"),
+)
+class DiscountModerationListView(generics.ListAPIView):
+    permission_classes = [IsModeratorOrAdmin]
+    serializer_class = DiscountModerationSerializer
+
+    def get_queryset(self):
+        qs = Discount.objects.select_related("brand", "category", "product", "store", "submitted_by").order_by("-created_at")
+        status_param = self.request.query_params.get("status")
+        if status_param:
+            qs = qs.filter(status=status_param)
+        return qs
+
+
+@extend_schema_view(
+    get=extend_schema(tags=["Discounts Moderation"], summary="Retrieve a discount (moderation)"),
+    patch=extend_schema(tags=["Discounts Moderation"], summary="Update discount status (moderation)"),
+)
+class DiscountModerationDetailView(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsModeratorOrAdmin]
+    serializer_class = DiscountModerationSerializer
+    queryset = Discount.objects.select_related("brand", "category", "product", "store", "submitted_by").all()
+
+
+@extend_schema_view(
     get=extend_schema(
         tags=["User Discounts"],
         summary="List submitted discounts",
@@ -283,5 +322,112 @@ class UserDiscountListCreateView(generics.ListCreateAPIView):
         return Discount.objects.filter(submitted_by=self.request.user).order_by("-created_at")
 
     def perform_create(self, serializer):
-        """Inject the current user into the submitted_by field."""
+        """Inject the current user. Supports store-wide, category-in-store, and product discounts."""
         serializer.save(submitted_by=self.request.user)
+
+
+@extend_schema_view(
+    list=extend_schema(tags=["Shopping Carts"], summary="List your shopping carts"),
+    retrieve=extend_schema(tags=["Shopping Carts"], summary="Get a shopping cart"),
+    create=extend_schema(tags=["Shopping Carts"], summary="Create a shopping cart"),
+)
+class ShoppingCartViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = ShoppingCartSerializer
+
+    def get_queryset(self):
+        qs = (
+            ShoppingCart.objects
+            .filter(user=self.request.user)
+            .prefetch_related("items__product__brand")
+        )
+        status_param = self.request.query_params.get("status")
+        if status_param:
+            qs = qs.filter(status=status_param.upper())
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    @extend_schema(
+        tags=["Shopping Carts"],
+        summary="Add or increase an item",
+        request=ShoppingCartItemSerializer,
+        responses={200: ShoppingCartSerializer},
+    )
+    @action(detail=True, methods=["post"], url_path="add-item")
+    def add_item(self, request, pk=None):
+        cart: ShoppingCart = self.get_object()
+        product_id = request.data.get("product")
+        quantity = int(request.data.get("quantity", 1))
+        if not product_id:
+            return Response({"detail": "'product' is required."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            product = Product.objects.select_related("brand").get(pk=product_id)
+        except Product.DoesNotExist:
+            return Response({"detail": "Product not found."}, status=status.HTTP_404_NOT_FOUND)
+        item, _ = ShoppingCartItem.objects.get_or_create(shopping_cart=cart, product=product)
+        if quantity < 1:
+            quantity = 1
+        item.quantity = item.quantity + quantity - 1 if request.data.get("increment", False) else quantity
+        item.save()
+        out = ShoppingCartSerializer(cart)
+        return Response(out.data)
+
+    @extend_schema(
+        tags=["Shopping Carts"],
+        summary="Update item quantity/purchased",
+        request=ShoppingCartItemSerializer,
+        responses={200: ShoppingCartSerializer},
+    )
+    @action(detail=True, methods=["patch"], url_path="update-item")
+    def update_item(self, request, pk=None):
+        cart: ShoppingCart = self.get_object()
+        product_id = request.data.get("product")
+        if not product_id:
+            return Response({"detail": "'product' is required."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            item = ShoppingCartItem.objects.select_related("product").get(shopping_cart=cart, product_id=product_id)
+        except ShoppingCartItem.DoesNotExist:
+            return Response({"detail": "Item not found in this cart."}, status=status.HTTP_404_NOT_FOUND)
+
+        if "quantity" in request.data:
+            try:
+                q = int(request.data.get("quantity", 1))
+            except ValueError:
+                return Response({"detail": "'quantity' must be an integer."}, status=status.HTTP_400_BAD_REQUEST)
+            item.quantity = max(q, 1)
+        if "is_purchased" in request.data:
+            item.is_purchased = bool(request.data.get("is_purchased"))
+        item.save()
+        out = ShoppingCartSerializer(cart)
+        return Response(out.data)
+
+    @extend_schema(
+        tags=["Shopping Carts"],
+        summary="Remove an item",
+        request=ShoppingCartItemSerializer,
+        responses={200: ShoppingCartSerializer},
+    )
+    @action(detail=True, methods=["delete"], url_path="remove-item")
+    def remove_item(self, request, pk=None):
+        cart: ShoppingCart = self.get_object()
+        product_id = request.data.get("product") or request.query_params.get("product")
+        if not product_id:
+            return Response({"detail": "'product' is required."}, status=status.HTTP_400_BAD_REQUEST)
+        ShoppingCartItem.objects.filter(shopping_cart=cart, product_id=product_id).delete()
+        out = ShoppingCartSerializer(cart)
+        return Response(out.data)
+
+    @extend_schema(
+        tags=["Shopping Carts"],
+        summary="Close the cart",
+        responses={200: ShoppingCartSerializer},
+    )
+    @action(detail=True, methods=["post"], url_path="close")
+    def close(self, request, pk=None):
+        cart: ShoppingCart = self.get_object()
+        cart.status = ShoppingCart.Status.CLOSED
+        cart.save(update_fields=["status", "updated_at"])
+        out = ShoppingCartSerializer(cart)
+        return Response(out.data)

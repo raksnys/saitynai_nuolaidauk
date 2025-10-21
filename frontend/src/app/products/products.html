@@ -64,7 +64,10 @@
                 <p class="discount-price">Discount Price: {{ (product.price - product.discounts[0].value).toFixed(2) }} €</p>
                 }
             </div>
-            <button [routerLink]="['/products', product.id]" class="temp-button">View Details</button>
+            <div class="card-actions">
+                <button [routerLink]="['/products', product.id]" class="temp-button">View Details</button>
+                <button class="temp-button secondary" (click)="quickAddToCart(product)">Add to Cart</button>
+            </div>
         </div>
         }
     </div>

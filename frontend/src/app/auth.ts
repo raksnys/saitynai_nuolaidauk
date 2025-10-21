@@ -10,9 +10,12 @@ export class Auth {
   private apiUrl = environment.apiUrl;
   private authState = new BehaviorSubject<boolean>(this.hasToken());
   private roleState = new BehaviorSubject<string | null>(this.getStoredRole());
+  // For testing/diagnostics: keep the last refresh token returned by backend (also set as HttpOnly cookie)
+  private lastRefreshTokenState = new BehaviorSubject<string | null>(null);
   
   isLoggedIn$ = this.authState.asObservable();
   role$ = this.roleState.asObservable();
+  lastRefreshToken$ = this.lastRefreshTokenState.asObservable();
 
   constructor(private http: HttpClient) {
     // ensure role is consistent with current JWT on startup
@@ -42,6 +45,10 @@ export class Auth {
         if (role) {
           localStorage.setItem('role', role);
           this.roleState.next(role);
+        }
+        // capture refresh token returned in body (also set as HttpOnly cookie)
+        if (response?.refresh_token) {
+          this.lastRefreshTokenState.next(response.refresh_token);
         }
         this.authState.next(true);
       })
@@ -79,6 +86,9 @@ export class Auth {
           localStorage.setItem('role', role);
           this.roleState.next(role);
         }
+        if (response?.refresh_token) {
+          this.lastRefreshTokenState.next(response.refresh_token);
+        }
       })
     );
   }
@@ -94,5 +104,10 @@ export class Auth {
     } catch {
       return null;
     }
+  }
+
+  // Testing helpers
+  getLastRefreshToken(): string | null {
+    return this.lastRefreshTokenState.value;
   }
 }

@@ -256,6 +256,65 @@ class UserDiscountAPITests(APITestCase):
                 "weight": "0.200", # Add weight to avoid a different validation error
             },
         }
+    def test_create_store_wide_discount(self):
+        """User can create a store-wide (all products in store) discount by setting all_products=true."""
+        data = {
+            "name": "Store Anniversary",
+            "discount_type": Discount.PERCENTAGE,
+            "value": "10",
+            "starts_at": timezone.now(),
+            "ends_at": timezone.now() + timezone.timedelta(days=3),
+            "store_id": self.store.id,
+            "brand_id": self.brand.id,
+            "all_products": True,
+        }
+        res = self.client.post(self.list_create_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        d = Discount.objects.get(id=res.data["id"])
+        self.assertEqual(d.target_type, Discount.TARGET_STORE)
+        self.assertEqual(d.store_id, self.store.id)
+        self.assertEqual(d.brand_id, self.brand.id)
+
+    def test_category_discount_scoped_to_store(self):
+        data = {
+            "name": "Bakery Weekend",
+            "discount_type": Discount.FIXED,
+            "value": "1.00",
+            "starts_at": timezone.now(),
+            "ends_at": timezone.now() + timezone.timedelta(days=2),
+            "store_id": self.store.id,
+            "category_id": self.category.id,
+            "brand_id": self.brand.id,
+        }
+        res = self.client.post(self.list_create_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        d = Discount.objects.get(id=res.data["id"])
+        self.assertEqual(d.target_type, Discount.TARGET_CATEGORY)
+        self.assertEqual(d.store_id, self.store.id)
+
+    def test_product_must_belong_to_store(self):
+        other_brand = Brand.objects.create(name="OtherChain")
+        other_store = Store.objects.create(brand=other_brand, address_line1="9 Ave", city="Kaunas")
+        other_category = Category.objects.create(name="OtherCat")
+        other_product = Product.objects.create(
+            store=other_store,
+            brand=other_brand,
+            category=other_category,
+            name="Foreign",
+            price=Decimal("1.00"),
+            weight=Decimal("0.100"),
+        )
+        data = {
+            "name": "Bad Product Discount",
+            "discount_type": Discount.FIXED,
+            "value": "0.50",
+            "starts_at": timezone.now(),
+            "ends_at": timezone.now() + timezone.timedelta(days=1),
+            "store_id": self.store.id,
+            "product_id": other_product.id,
+        }
+        res = self.client.post(self.list_create_url, data, format="json")
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
         response = self.client.post(self.list_create_url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("non_field_errors", response.data)
@@ -511,3 +570,84 @@ class ReportAPITests(APITestCase):
         detail_url = reverse("catalog:report-detail", kwargs={"pk": rep.id})
         res2 = self.client.patch(detail_url, {"status": Report.ReportStatus.DENIED}, format="json")
         self.assertEqual(res2.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class ShoppingCartAPITests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(email="cartuser@example.com", password="pw123456")
+        self.client.force_authenticate(user=self.user)
+
+        self.brand = Brand.objects.create(name="Cart Brand")
+        self.other_brand = Brand.objects.create(name="Other Brand")
+        self.category = Category.objects.create(name="Cart Category")
+        self.store1 = Store.objects.create(brand=self.brand, address_line1="1 St", city="Vilnius")
+        self.store2 = Store.objects.create(brand=self.other_brand, address_line1="2 St", city="Vilnius")
+        self.p1 = Product.objects.create(
+            store=self.store1,
+            brand=self.brand,
+            category=self.category,
+            name="Cart Prod 1",
+            price=Decimal("2.00"),
+            weight=Decimal("0.100"),
+        )
+        self.p2_other_brand = Product.objects.create(
+            store=self.store2,
+            brand=self.other_brand,
+            category=self.category,
+            name="Other Brand Prod",
+            price=Decimal("3.00"),
+            weight=Decimal("0.200"),
+        )
+
+    def test_create_cart_and_add_items(self):
+        # Create cart
+        res = self.client.post("/api/catalog/shopping-carts/", {"name": "Weekly"}, format="json")
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        cart_id = res.data["id"]
+
+        # Add valid item
+        url_add = f"/api/catalog/shopping-carts/{cart_id}/add-item/"
+        res2 = self.client.post(url_add, {"product": self.p1.id, "quantity": 2}, format="json")
+        self.assertEqual(res2.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res2.data["items"]), 1)
+        self.assertEqual(res2.data["items"][0]["quantity"], 2)
+        
+        # Add cross-brand product -> allowed now
+        res3 = self.client.post(url_add, {"product": self.p2_other_brand.id, "quantity": 1}, format="json")
+        self.assertEqual(res3.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res3.data["items"]), 2)
+
+    def test_only_one_open_cart_globally(self):
+        # First cart OK
+        res1 = self.client.post("/api/catalog/shopping-carts/", {}, format="json")
+        self.assertEqual(res1.status_code, status.HTTP_201_CREATED)
+        # Second open cart for any brand should fail (global uniqueness)
+        res2 = self.client.post("/api/catalog/shopping-carts/", {}, format="json")
+        self.assertEqual(res2.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Close first cart
+        cart_id = res1.data["id"]
+        res_close = self.client.post(f"/api/catalog/shopping-carts/{cart_id}/close/")
+        self.assertEqual(res_close.status_code, status.HTTP_200_OK)
+        self.assertEqual(res_close.data["status"], "CLOSED")
+
+        # Now a new cart is allowed
+        res3 = self.client.post("/api/catalog/shopping-carts/", {}, format="json")
+        self.assertEqual(res3.status_code, status.HTTP_201_CREATED)
+
+    def test_mark_item_purchased_and_update_quantity(self):
+        # Create cart
+        res = self.client.post("/api/catalog/shopping-carts/", {}, format="json")
+        cart_id = res.data["id"]
+        # Add item
+        self.client.post(f"/api/catalog/shopping-carts/{cart_id}/add-item/", {"product": self.p1.id, "quantity": 1}, format="json")
+        # Update item -> purchased and quantity 3
+        res2 = self.client.patch(
+            f"/api/catalog/shopping-carts/{cart_id}/update-item/",
+            {"product": self.p1.id, "is_purchased": True, "quantity": 3},
+            format="json",
+        )
+        self.assertEqual(res2.status_code, status.HTTP_200_OK)
+        item = next(i for i in res2.data["items"] if i["product"] == self.p1.id)
+        self.assertTrue(item["is_purchased"])
+        self.assertEqual(item["quantity"], 3)

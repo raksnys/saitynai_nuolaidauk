@@ -1,0 +1,102 @@
+<div class="reports-container">
+    <h1>Discounts Moderation</h1>
+
+    @if (error) {
+    <div class="error-box">{{ error }}</div>
+    } @else if (loading) {
+    <div class="loading-container">
+        <p>Loading...</p>
+    </div>
+    } @else {
+    <!-- IN_REVIEW -->
+    <div class="reports-card" style="margin-bottom: 1rem;">
+        <h2 style="margin: 0 0 0.5rem 0;">In Review</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Scope</th>
+                        <th>Type</th>
+                        <th>Value</th>
+                        <th>Starts</th>
+                        <th>Ends</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (inReviewItems.length === 0) {
+                    <tr>
+                        <td colspan="9" style="text-align:center; opacity:0.8;">No discounts in review.</td>
+                    </tr>
+                    } @else { @for (d of inReviewItems; track d.id) {
+                    <tr>
+                        <td>{{ d.id }}</td>
+                        <td class="desc" [title]="d.description">{{ d.name }}</td>
+                        <td>{{ d.target_type }}</td>
+                        <td>{{ d.discount_type }}</td>
+                        <td>{{ d.value }}</td>
+                        <td>{{ d.starts_at | date:'short' }}</td>
+                        <td>{{ d.ends_at | date:'short' }}</td>
+                        <td>
+                            <span class="badge reported">IN_REVIEW</span>
+                        </td>
+                        <td>
+                            <button class="btn" (click)="setStatus(d, 'approved')" [disabled]="updatingId===d.id">Approve</button>
+                            <button class="btn" (click)="setStatus(d, 'denied')" [disabled]="updatingId===d.id">Deny</button>
+                        </td>
+                    </tr>
+                    } }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- APPROVED -->
+    <div class="reports-card">
+        <h2 style="margin: 0 0 0.5rem 0;">Approved</h2>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Scope</th>
+                        <th>Type</th>
+                        <th>Value</th>
+                        <th>Starts</th>
+                        <th>Ends</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (approvedItems.length === 0) {
+                    <tr>
+                        <td colspan="9" style="text-align:center; opacity:0.8;">No approved discounts.</td>
+                    </tr>
+                    } @else { @for (d of approvedItems; track d.id) {
+                    <tr>
+                        <td>{{ d.id }}</td>
+                        <td class="desc" [title]="d.description">{{ d.name }}</td>
+                        <td>{{ d.target_type }}</td>
+                        <td>{{ d.discount_type }}</td>
+                        <td>{{ d.value }}</td>
+                        <td>{{ d.starts_at | date:'short' }}</td>
+                        <td>{{ d.ends_at | date:'short' }}</td>
+                        <td>
+                            <span class="badge accepted">APPROVED</span>
+                        </td>
+                        <td>
+                            <button class="btn" (click)="setStatus(d, 'denied')" [disabled]="updatingId===d.id">Deny</button>
+                        </td>
+                    </tr>
+                    } }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    }
+</div>

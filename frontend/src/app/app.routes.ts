@@ -8,6 +8,9 @@ import { Products } from './products/products';
 import { ProductDetailComponent } from './products/product-detail/product-detail';
 import { Reports } from './reports/reports';
 import { ProductSearchComponent } from './product-search/product-search';
+import { CartComponent } from './cart/cart';
+import { DiscountCreateComponent } from './discount-create/discount-create';
+import { DiscountsModerationComponent } from './discounts-moderation/discounts-moderation';
 
 export const routes: Routes = [
     { path: '', component: LandingPage },
@@ -17,6 +20,9 @@ export const routes: Routes = [
     { path: 'stores', component: Stores },
     { path: 'products', component: Products },
     { path: 'products/:id', component: ProductDetailComponent },
+    { path: 'cart', component: CartComponent },
+    { path: 'discounts/create', component: DiscountCreateComponent },
+    { path: 'discounts/moderation', component: DiscountsModerationComponent },
     { path: 'search', component: ProductSearchComponent },
     { path: 'reports', component: Reports },
     { path: '**', redirectTo: '' }

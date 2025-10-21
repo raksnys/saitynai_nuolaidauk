@@ -12,6 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { WishlistService, WishlistItemDTO } from '../../services/wishlist.service';
 import { ReportService } from '../../services/report.service';
 import { Auth } from '../../auth';
+import { ShoppingCartService } from '../../services/shopping-cart.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -43,7 +44,8 @@ export class ProductDetailComponent implements OnInit {
     private reportService: ReportService,
     private auth: Auth,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private cartService: ShoppingCartService,
   ) {}
 
   ngOnInit(): void {
@@ -194,6 +196,29 @@ export class ProductDetailComponent implements OnInit {
         this.isReportModalOpen = false;
         this.cdr.detectChanges();
       }
+    });
+  }
+
+  addToCart(): void {
+    if (!this.product) return;
+    const product = this.product;
+    // Try to get current open cart, if none -> create, then add item
+    this.cartService.getOpenCart().subscribe({
+      next: (cart) => {
+        if (!cart) {
+          this.cartService.create().subscribe({
+            next: (newCart) => {
+              this.cartService.addItem(newCart.id, product.id, 1).subscribe();
+            },
+            error: (e) => console.error('Failed to create cart', e)
+          });
+          return;
+        }
+        this.cartService.addItem(cart.id, product.id, 1, true).subscribe({
+          error: (e) => console.error('Failed to add item', e)
+        });
+      },
+      error: (e) => console.error('Failed to get open cart', e)
     });
   }
 }

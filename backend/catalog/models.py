@@ -75,10 +75,12 @@ class Discount(TimeStampedModel):
     TARGET_PRODUCT = "product"
     TARGET_CATEGORY = "category"
     TARGET_BRAND = "brand"
+    TARGET_STORE = "store"
     TARGET_TYPE_CHOICES = [
         (TARGET_PRODUCT, "Product"),
         (TARGET_CATEGORY, "Category"),
         (TARGET_BRAND, "Brand"),
+        (TARGET_STORE, "Store"),
     ]
 
     class DiscountStatus(models.TextChoices):
@@ -97,6 +99,13 @@ class Discount(TimeStampedModel):
         blank=True,
         on_delete=models.CASCADE,
         related_name="discounts",
+    )
+    store = models.ForeignKey(
+        'Store',
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name='discounts',
     )
     category = models.ForeignKey(
         Category,
@@ -156,6 +165,7 @@ class Discount(TimeStampedModel):
     def clean(self) -> None:
         target_map = {
             self.TARGET_BRAND: self.brand,
+            self.TARGET_STORE: self.store,
             self.TARGET_CATEGORY: self.category,
             self.TARGET_PRODUCT: self.product,
         }
@@ -167,6 +177,18 @@ class Discount(TimeStampedModel):
         for scope, fk in target_map.items():
             if scope != self.target_type and fk is not None:
                 raise ValidationError("Only one discount target may be set.")
+
+        # Additional cross-field validations
+        if self.target_type == self.TARGET_PRODUCT and self.product:
+            # store/brand should align with the product if provided
+            if self.store and self.product.store_id != self.store_id:
+                raise ValidationError("For product discounts, store must match the product's store.")
+            if self.brand and self.product.brand_id != self.brand_id:
+                raise ValidationError("For product discounts, brand must match the product's brand.")
+        if self.target_type == self.TARGET_CATEGORY and self.store and self.brand and self.brand_id != self.store.brand_id:
+            raise ValidationError("Selected store does not belong to the selected brand.")
+        if self.target_type == self.TARGET_STORE and self.store and self.brand and self.brand_id != self.store.brand_id:
+            raise ValidationError("Selected store does not belong to the selected brand.")
 
         if self.discount_type == self.PERCENTAGE and not (0 < self.value <= 100):
             raise ValidationError("Percentage discounts must be between 0 and 100.")
@@ -255,6 +277,58 @@ class WishlistItem(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"{self.user_id} -> {self.product_id}"
+
+
+class ShoppingCart(TimeStampedModel):
+    """A user's shopping cart.
+    - Optional name
+    - Status: OPEN/CLOSED (only one OPEN cart per user globally)
+    """
+
+    class Status(models.TextChoices):
+        OPEN = "OPEN", "Open"
+        CLOSED = "CLOSED", "Closed"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="shopping_carts",
+    )
+    name = models.CharField(max_length=255, null=True, blank=True)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.OPEN)
+
+    class Meta:
+        ordering = ["-updated_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user"],
+                condition=models.Q(status="OPEN"),
+                name="unique_open_cart_per_user",
+            )
+        ]
+
+    def __str__(self) -> str:
+        base = f"{self.user_id}"
+        if self.name:
+            base = f"{base} ({self.name})"
+        return f"Cart[{self.status}] {base}"
+
+
+class ShoppingCartItem(models.Model):
+    shopping_cart = models.ForeignKey(
+        ShoppingCart,
+        on_delete=models.CASCADE,
+        related_name="items",
+    )
+    product = models.ForeignKey("Product", on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    is_purchased = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ("shopping_cart", "product")
+
+    def __str__(self) -> str:
+        return f"Cart#{self.shopping_cart_id} -> Product#{self.product_id} x{self.quantity}"
 
 
 class Report(TimeStampedModel):

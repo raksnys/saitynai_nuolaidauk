@@ -67,5 +67,49 @@
             </div>
             }
         </div>
+
+        <div class="tokens-test-section">
+            <h3>Tokens (testing only)</h3>
+            <p class="note">HttpOnly cookies can't be read by JavaScript. We show what's readable and the last tokens returned by the backend for verification.</p>
+            <div class="tokens-grid">
+                <div class="token-row">
+                    <span class="label">JWT (localStorage):</span>
+                    <span class="mono">{{ jwtLocal ? (jwtLocal | slice:0:16) + '...' + (jwtLocal | slice:-8) : 'not set' }}</span>
+                </div>
+                <div class="token-row">
+                    <span class="label">JWT cookie:</span>
+                    <span class="mono">{{ jwtCookieReadable || 'unavailable (HttpOnly)' }}</span>
+                </div>
+                <div class="token-row">
+                    <span class="label">Refresh cookie:</span>
+                    <span class="mono">{{ refreshCookieReadable || 'unavailable (HttpOnly)' }}</span>
+                </div>
+                <div class="token-row">
+                    <span class="label">Last refresh_token (from response body):</span>
+                    <span class="mono">{{ lastRefreshTokenFromBody ? (lastRefreshTokenFromBody | slice:0:16) + '...' + (lastRefreshTokenFromBody | slice:-8) : '—' }}</span>
+                </div>
+                <div class="token-row">
+                    <span class="label">Access iat (before → after):</span>
+                    <span class="mono">{{ lastRefreshResult.beforeAccessIat || 'n/a' }} → {{ lastRefreshResult.afterAccessIat || 'n/a' }}</span>
+                </div>
+                <div class="token-row">
+                    <span class="label">Access changed?</span>
+                    <span class="mono">{{ lastRefreshResult.accessChanged === true ? 'yes' : (lastRefreshResult.accessChanged === false ? 'no' : '—') }}</span>
+                </div>
+                <div class="token-row">
+                    <span class="label">Refresh changed?</span>
+                    <span class="mono">{{ lastRefreshResult.refreshChanged === true ? 'yes' : (lastRefreshResult.refreshChanged === false ? 'no' : '—') }}</span>
+                </div>
+                <div class="token-row small">
+                    <span class="label">Access preview (before → after):</span>
+                    <span class="mono">{{ lastRefreshResult.beforeJwtPreview || '—' }} → {{ lastRefreshResult.afterJwtPreview || '—' }}</span>
+                </div>
+                <div class="token-row small">
+                    <span class="label">Refresh preview (before → after):</span>
+                    <span class="mono">{{ lastRefreshResult.beforeRefreshPreview || '—' }} → {{ lastRefreshResult.afterRefreshPreview || '—' }}</span>
+                </div>
+            </div>
+            <button type="button" (click)="onRefreshTokens()">Refresh tokens now</button>
+        </div>
     </div>
 </div>

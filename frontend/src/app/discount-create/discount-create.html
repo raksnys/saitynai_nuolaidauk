@@ -1,0 +1,94 @@
+<div class="container">
+    <div class="glass-card">
+        <h2>Submit a Store Discount</h2>
+        <p class="muted">Choose a store (chain + address), scope, and discount details.</p>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Store Chain</label>
+                <select [(ngModel)]="brandId" (change)="onBrandChange()">
+          <option [ngValue]="null" disabled>Select chain</option>
+          @for (b of brands; track b.id) { <option [ngValue]="b.id">{{ b.name }}</option> }
+        </select>
+            </div>
+
+            <div class="form-group">
+                <label>Store Address</label>
+                <select [(ngModel)]="storeId">
+          <option [ngValue]="null" disabled>Select store</option>
+          @for (s of filteredStores; track s.id) {
+            <option [ngValue]="s.id">{{ s.address_line1 }}{{ s.city ? ', ' + s.city : '' }}</option>
+          }
+        </select>
+            </div>
+
+            <div class="form-group span-2">
+                <label>Discount name</label>
+                <input type="text" [(ngModel)]="name" placeholder="e.g. Weekend sale" />
+            </div>
+
+            <div class="form-group span-2">
+                <label>Description (optional)</label>
+                <textarea [(ngModel)]="description" rows="2" placeholder="Short description..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Scope</label>
+                <div class="scopes">
+                    <label><input type="radio" name="scope" [(ngModel)]="scope" value="all" /> All products in store</label>
+                    <label><input type="radio" name="scope" [(ngModel)]="scope" value="category" /> Specific category</label>
+                    <label><input type="radio" name="scope" [(ngModel)]="scope" value="product" /> Specific product</label>
+                </div>
+            </div>
+
+            @if (scope === 'category') {
+            <div class="form-group">
+                <label>Category</label>
+                <select [(ngModel)]="categoryId">
+          <option [ngValue]="null" disabled>Select category</option>
+          @for (c of categories; track c.id) { <option [ngValue]="c.id">{{ c.name }}</option> }
+        </select>
+            </div> } @if (scope === 'product') {
+            <div class="form-group span-2">
+                <label>Find product</label>
+                <input type="text" [(ngModel)]="productQuery" (input)="searchProducts()" placeholder="Type to search..."> @if (productResults.length) {
+                <div class="results glass-subcard">
+                    @for (p of productResults; track p.id) {
+                    <button type="button" (click)="pickProduct(p)">{{ p.name }}</button> }
+                </div>
+                }
+            </div> }
+
+            <div class="form-group">
+                <label>Discount type</label>
+                <select [(ngModel)]="discountType">
+          <option [ngValue]="'percentage'">Percentage (%)</option>
+          <option [ngValue]="'fixed'">Fixed amount (EUR)</option>
+        </select>
+            </div>
+
+            <div class="form-group">
+                <label>Value</label>
+                <input type="number" step="0.01" min="0" [(ngModel)]="value" />
+            </div>
+
+            <div class="form-group">
+                <label>Starts at</label>
+                <input type="datetime-local" [(ngModel)]="startsAt" />
+            </div>
+
+            <div class="form-group">
+                <label>Ends at</label>
+                <input type="datetime-local" [(ngModel)]="endsAt" />
+            </div>
+        </div>
+
+        @if (error) {
+        <div class="error">{{ error }}</div> } @if (submittedId) {
+        <div class="success">Submitted! ID #{{ submittedId }}</div> }
+
+        <div class="actions">
+            <button class="primary" (click)="submit()" [disabled]="isSubmitting || !canSubmit()">Submit Discount</button>
+        </div>
+    </div>
+</div>

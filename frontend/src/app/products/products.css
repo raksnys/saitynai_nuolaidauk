@@ -100,6 +100,20 @@
     background-color: #2563eb;
 }
 
+.card-actions {
+    display: flex;
+    gap: .5rem;
+}
+
+.temp-button.secondary {
+    background-color: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.temp-button.secondary:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
 .pagination-controls {
     display: flex;
     justify-content: center;

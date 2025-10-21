@@ -1,6 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { ShoppingCartService } from '../services/shopping-cart.service';
 import { environment } from '../../environments/environment';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -37,7 +38,7 @@ export class Products implements OnInit {
 
   private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient, private cdr: ChangeDetectorRef) { }
+  constructor(private http: HttpClient, private cdr: ChangeDetectorRef, private cartService: ShoppingCartService) { }
 
   ngOnInit() {
     this.loadProducts();
@@ -122,5 +123,23 @@ export class Products implements OnInit {
     if (this.currentPage > 1) {
       this.loadProducts(this.currentPage - 1);
     }
+  }
+
+  quickAddToCart(p: { id: number; brand: number }): void {
+    this.cartService.getOpenCart().subscribe({
+      next: (cart) => {
+        if (!cart) {
+          this.cartService.create().subscribe({
+            next: (nc) => this.cartService.addItem(nc.id, p.id, 1).subscribe(),
+            error: (e) => console.error('Failed to create cart', e)
+          });
+          return;
+        }
+        this.cartService.addItem(cart.id, p.id, 1, true).subscribe({
+          error: (e) => console.error('Failed to add item', e)
+        });
+      },
+      error: (e) => console.error('Failed to get open cart', e)
+    });
   }
 }
