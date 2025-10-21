@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { Auth } from '../auth';
-import * as confetti from 'canvas-confetti';
+import confetti from 'canvas-confetti';
 
 interface DiscountModerationDTO {
   id: number;

@@ -6,7 +6,7 @@ import { ProductService } from '../services/product.service';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { RouterModule } from '@angular/router';
-import * as confetti from 'canvas-confetti';
+import confetti from 'canvas-confetti';
 
 @Component({
   selector: 'app-reports',
